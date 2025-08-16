@@ -2,19 +2,25 @@
 
 @section('content')
     <div class="container">
-        <h2>SQL Travels – Province: {{ $level->province }}</h2>
+        <h2>🌴 SQL Travels – Province: {{ $level->province }}</h2>
         <p><b>Story:</b> {{ $level->story }}</p>
         <pre><b>Dialogue:</b> {{ $level->dialogue }}</pre>
 
+        <div class="alert alert-info">
+            Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+        </div>
+
         <div id="task-container">
             @foreach ($tasks as $task)
-                <div class="task-block" data-task-id="{{ $task->id }}">
-                    <p><b>Task:</b> {{ $task->task }}</p>
-                    <textarea class="query-box" placeholder="Write your SQL here..."></textarea><br>
-                    <button class="run-btn">Run Query</button>
-                    <div class="result"></div>
+                <div class="card mb-3 task-block" data-task-id="{{ $task->id }}">
+                    <div class="card-body">
+                        <h5 class="card-title">Task</h5>
+                        <p>{{ $task->task }}</p>
+                        <textarea class="form-control query-box" placeholder="Write your SQL here..."></textarea>
+                        <button class="btn btn-primary mt-2 run-btn">Run Query</button>
+                        <div class="result mt-3"></div>
+                    </div>
                 </div>
-                <hr>
             @endforeach
         </div>
 
@@ -51,9 +57,18 @@
                         if (data.clue) {
                             resultBox.innerHTML += `<p><i>Hint: ${data.clue}</i></p>`;
                         }
-                        if (data.success && data.next_level) {
-                            document.getElementById('next-level').innerHTML =
-                                `<a href="/sql-game/${data.next_level}" class="btn btn-success">➡ Go to Next Level</a>`;
+
+                        if (data.force_level_down) {
+                            // 🚨 send the player back to previous level
+                            setTimeout(() => {
+                                window.location.href = "/sql-game/" + ({{ $level->id }} - 1);
+                            }, 2000);
+                        }
+
+                        // update attempts counter from response
+                        if (document.getElementById('attempts-left') && data.attempts_left !==
+                            undefined) {
+                            document.getElementById('attempts-left').textContent = data.attempts_left;
                         }
                     });
             });

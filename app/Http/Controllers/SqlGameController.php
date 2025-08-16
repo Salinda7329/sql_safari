@@ -31,41 +31,64 @@ class SqlGameController extends Controller
 
     public function runQuery(Request $request, $level)
     {
+        $playerId = 1; // demo: single player
         $taskId = $request->input('task_id');
         $userQuery = $request->input('query');
 
         $task = DB::table('level_tasks')->where('id', $taskId)->first();
-        if (!$task) return response()->json(['success' => false, 'message' => 'Task not found']);
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'Task not found']);
+        }
+
+        $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
 
         try {
             $userResult = DB::select($userQuery);
             $expectedResult = DB::select($task->expected_query);
 
             if ($userResult == $expectedResult) {
-                // Mark task as completed (future: track player_task_progress)
-                $remaining = DB::table('level_tasks')
-                    ->where('level_id', $level)
-                    ->whereNotIn('id', [$taskId]) // crude; ideally check completed status
-                    ->count();
+                // ✅ Reset attempts since the player solved it
+                DB::table('player_progress')
+                    ->where('player_id', $playerId)
+                    ->update([
+                        'attempts_left' => 3,
+                        'current_task' => $progress->current_task + 1
+                    ]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Correct for this task!",
+                    'message' => "✅ Correct! Task completed.",
                     'result' => $userResult,
-                    'next_level' => $remaining === 0 ? $level + 1 : null
+                    'attempts_left' => 3
                 ]);
             } else {
+                // ❌ Wrong answer → decrease attempts
+                $remainingAttempts = max(0, $progress->attempts_left - 1);
+
+                DB::table('player_progress')
+                    ->where('player_id', $playerId)
+                    ->update(['attempts_left' => $remainingAttempts]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => "Incorrect. Try again!",
-                    'result' => $userResult,
-                    'clue' => $task->clue
+                    'message' => "❌ Incorrect. You have {$remainingAttempts} attempts left.",
+                    'clue' => $task->clue,
+                    'attempts_left' => $remainingAttempts
                 ]);
             }
         } catch (\Exception $e) {
+            // ❌ Syntax or runtime error → still decrease attempts
+            $remainingAttempts = max(0, $progress->attempts_left - 1);
+
+            DB::table('player_progress')
+                ->where('player_id', $playerId)
+                ->update(['attempts_left' => $remainingAttempts]);
+
             return response()->json([
                 'success' => false,
-                'message' => "Error: " . $e->getMessage()
+                'message' => "⚠ Error: " . $e->getMessage(),
+                'attempts_left' => $remainingAttempts,
+                'clue' => $task->clue
             ]);
         }
     }
