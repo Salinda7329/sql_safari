@@ -9,24 +9,33 @@ class SqlGameController extends Controller
 {
     public function showLevel($level)
     {
-        $progress = DB::table('player_progress')->where('player_id', 1)->first();
+        $playerId = 1; // demo
+
+        $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
         if (!$progress) abort(403, 'Player progress not found');
 
         if ($level > $progress->highest_level) {
-            abort(403, "You haven't unlocked this level yet. Finish the previous one first!");
+            abort(403, "You haven't unlocked this level yet!");
         }
 
         $levelData = DB::table('levels')->where('id', $level)->first();
-        $tasks = DB::table('level_tasks')->where('level_id', $level)->get();
-
         if (!$levelData) abort(404);
+
+        // load current task for this level
+        $currentTask = DB::table('level_tasks')
+            ->where('level_id', $level)
+            ->orderBy('id')
+            ->skip($progress->current_task - 1)
+            ->take(1)
+            ->first();
 
         return view("level{$level}", [
             'level' => $levelData,
-            'tasks' => $tasks,
+            'task' => $currentTask,
             'progress' => $progress
         ]);
     }
+
 
 
     public function runQuery(Request $request, $level)
@@ -47,7 +56,7 @@ class SqlGameController extends Controller
             $expectedResult = DB::select($task->expected_query);
 
             if ($userResult == $expectedResult) {
-                // ✅ Reset attempts since the player solved it
+                // move to next task in this level
                 DB::table('player_progress')
                     ->where('player_id', $playerId)
                     ->update([
@@ -55,9 +64,15 @@ class SqlGameController extends Controller
                         'current_task' => $progress->current_task + 1
                     ]);
 
+                $remaining = DB::table('level_tasks')
+                    ->where('level_id', $level)
+                    ->count() - $progress->current_task;
+
                 return response()->json([
                     'success' => true,
-                    'message' => "✅ Correct! Task completed.",
+                    'message' => $remaining > 0
+                        ? "✅ Correct! Get ready for the next challenge."
+                        : "🎉 Level cleared! Moving to next province.",
                     'result' => $userResult,
                     'attempts_left' => 3
                 ]);
