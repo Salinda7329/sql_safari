@@ -15,13 +15,18 @@
             padding: 10px;
             border: 1px solid #ccc;
         }
+
+        #next-level {
+            margin-top: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
     <h2>SQL Travels – Province: {{ $level->province }}</h2>
     <p><b>Story:</b> {{ $level->story }}</p>
-    <p><b>Task:</b> {{ $level->task }}</p>
+    <p><b>Task:</b> {{ $task->task }}</p>
 
     <form id="sqlForm">
         <textarea name="query" placeholder="Write your SQL here..."></textarea><br>
@@ -42,7 +47,8 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({
-                        query: document.querySelector('textarea').value
+                        query: document.querySelector('textarea').value,
+                        task_id: {{ $task->id }}
                     })
                 })
                 .then(res => res.json())
@@ -51,12 +57,24 @@
                     if (data.result) {
                         output += `<pre>${JSON.stringify(data.result, null, 2)}</pre>`;
                     }
+                    if (data.clue) {
+                        output += `<p><i>💡 Hint: ${data.clue}</i></p>`;
+                    }
                     document.getElementById('result').innerHTML = output;
 
-                    // show Next Level link if unlocked
+                    // ✅ Auto redirect if next level unlocked
                     if (data.success && data.next_level) {
                         document.getElementById('next-level').innerHTML =
-                            `<a href="/sql-game/${data.next_level}">➡️ Go to Next Level</a>`;
+                            `<p>🎉 Level cleared! Redirecting to Level ${data.next_level}...</p>`;
+                        setTimeout(() => {
+                            window.location.href = `/sql-game/${data.next_level}`;
+                        }, 2000);
+                    }
+                    // ✅ Reload current page if next task exists
+                    else if (data.success) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     }
                 });
         });
