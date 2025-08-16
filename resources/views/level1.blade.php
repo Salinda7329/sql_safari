@@ -1,22 +1,32 @@
 @extends('layouts.app')
 
+@section('title', 'Level 1 - Colombo')
+
 @section('content')
-    <div class="game-screen">
-        <div class="dialogue-box">
-            <p>👩‍💻 {{ $level->dialogue }}</p>
+    <div class="level-screen">
+        <div class="city-banner">
+            <h2>🌴 Colombo, Sri Lanka</h2>
         </div>
 
-        <div class="task-panel">
-            <h4>Task</h4>
+        <div class="character-section">
+            <img src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila">
+            <div class="speech-bubble">
+                Welcome to Sri Lanka! I am <b>Nila</b>, your tour guide.
+                I’ll help you practice SQL by finding hotels in Colombo. 🌆
+            </div>
+            <img src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex">
+        </div>
+
+        <div class="task-box">
+            <h3>📝 Task</h3>
             <p>{{ $task->task }}</p>
-            <textarea id="query-box" class="form-control" rows="3" placeholder="Write your SQL here..."></textarea>
-            <button id="run-btn" class="btn btn-primary mt-2">Run Query</button>
-            <div id="result" class="mt-3"></div>
+            <textarea id="query-box" class="sql-input" rows="3" placeholder="Write your SQL query here..."></textarea>
+            <button id="run-btn" class="run-query-btn">Run Query</button>
+            <div id="result" class="result-box"></div>
         </div>
 
-        <div class="footer-controls">
-            <span>Attempts left: <b id="attempts-left">{{ $progress->attempts_left }}</b></span>
-            <button class="btn btn-secondary" onclick="window.history.back()">⬅ Back</button>
+        <div class="attempts-box">
+            Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
         </div>
     </div>
 @endsection
@@ -45,14 +55,14 @@
                         resultBox.innerHTML += `<pre>${JSON.stringify(data.result, null, 2)}</pre>`;
                     }
                     if (data.clue) {
-                        resultBox.innerHTML += `<p><i>Hint: ${data.clue}</i></p>`;
+                        resultBox.innerHTML += `<p class="hint">💡 Hint: ${data.clue}</p>`;
                     }
                     if (data.attempts_left !== undefined) {
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
                     if (data.success) {
                         setTimeout(() => {
-                            window.location.reload(); // load next task in same level
+                            window.location.reload();
                         }, 1500);
                     }
                 });
