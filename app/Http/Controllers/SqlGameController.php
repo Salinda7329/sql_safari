@@ -9,25 +9,20 @@ class SqlGameController extends Controller
 {
     public function showLevel($level)
     {
-        $playerId = 1; // demo
-
+        $playerId = 1;
         $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
         if (!$progress) abort(403, 'Player progress not found');
 
-        if ($level > $progress->highest_level) {
-            abort(403, "You haven't unlocked this level yet!");
+        // ✅ Redirect to current_level if URL mismatch
+        if ($level != $progress->current_level) {
+            return redirect("/sql-game/{$progress->current_level}");
         }
 
         $levelData = DB::table('levels')->where('id', $level)->first();
         if (!$levelData) abort(404);
 
-        // Get current task by task_id OR first task in level
-        if ($progress->current_task_id) {
-            $currentTask = DB::table('level_tasks')->where('id', $progress->current_task_id)->first();
-        } else {
-            $currentTask = DB::table('level_tasks')->where('level_id', $level)->orderBy('id')->first();
-            DB::table('player_progress')->where('player_id', $playerId)->update(['current_task_id' => $currentTask->id]);
-        }
+        // load current task
+        $currentTask = DB::table('level_tasks')->where('id', $progress->current_task_id)->first();
 
         return view("level{$level}", [
             'level' => $levelData,
@@ -35,6 +30,7 @@ class SqlGameController extends Controller
             'progress' => $progress
         ]);
     }
+
 
 
 
@@ -76,10 +72,10 @@ class SqlGameController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'message' => "✅ Correct! Moving to next task.",
+                        'message' => "🎉 Level {$level} cleared! Moving to Level " . ($level + 1),
                         'result' => $userResult,
                         'attempts_left' => 3,
-                        'next_level' => $nextTask->level_id
+                        'next_level' => $level + 1  // ✅ Send next level
                     ]);
                 } else {
                     // 🎉 No more tasks = Game complete

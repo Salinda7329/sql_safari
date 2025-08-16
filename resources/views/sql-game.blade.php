@@ -72,10 +72,21 @@
                     }
                     // ✅ Reload current page if next task exists
                     else if (data.success) {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
+                        if (data.success && data.next_level) {
+                            document.getElementById('next-level').innerHTML =
+                                `<p>🎉 Level cleared! Redirecting to Level ${data.next_level}...</p>`;
+                            setTimeout(() => {
+                                window.location.href = `/sql-game/${data.next_level}`;
+                            }, 1500);
+                        }
+                        // ✅ If success but no new level, just reload to show next task
+                        else if (data.success) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
                     }
+
                 });
         });
     </script>
