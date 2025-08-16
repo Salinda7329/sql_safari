@@ -9,33 +9,49 @@ class SqlGameController extends Controller
 {
     public function showLevel($level)
     {
-        // Load level data from DB
+        // demo: assume player_id = 1
+        $progress = DB::table('player_progress')->where('player_id', 1)->first();
+        if (!$progress) {
+            abort(403, 'Player progress not found');
+        }
+
+        // prevent skipping
+        if ($level > $progress->highest_level) {
+            abort(403, "You haven't unlocked this level yet. Finish the previous one first!");
+        }
+
         $levelData = DB::table('levels')->where('id', $level)->first();
         if (!$levelData) abort(404);
 
-        return view('sql-game', ['level' => $levelData]);
+        return view('sql-game', ['level' => $levelData, 'progress' => $progress]);
     }
 
     public function runQuery(Request $request, $level)
     {
         $userQuery = $request->input('query');
-
-        // Get expected query from DB
         $levelData = DB::table('levels')->where('id', $level)->first();
         if (!$levelData) {
             return response()->json(['success' => false, 'message' => 'Level not found']);
         }
-        $expectedQuery = $levelData->expected_query;
 
         try {
             $userResult = DB::select($userQuery);
-            $expectedResult = DB::select($expectedQuery);
+            $expectedResult = DB::select($levelData->expected_query);
 
             if ($userResult == $expectedResult) {
+                // Update progress
+                $progress = DB::table('player_progress')->where('player_id', 1)->first();
+                if ($progress && $level == $progress->highest_level) {
+                    DB::table('player_progress')
+                        ->where('player_id', 1)
+                        ->update(['highest_level' => $progress->highest_level + 1]);
+                }
+
                 return response()->json([
                     'success' => true,
-                    'message' => "Correct! You’ve cleared " . $levelData->province . " Province!",
-                    'result' => $userResult
+                    'message' => "Correct! You’ve cleared {$levelData->province} Province!",
+                    'result' => $userResult,
+                    'next_level' => $level + 1
                 ]);
             } else {
                 return response()->json([

@@ -29,6 +29,7 @@
     </form>
 
     <div id="result"></div>
+    <div id="next-level"></div>
 
     <script>
         document.getElementById('sqlForm').addEventListener('submit', function(e) {
@@ -51,6 +52,12 @@
                         output += `<pre>${JSON.stringify(data.result, null, 2)}</pre>`;
                     }
                     document.getElementById('result').innerHTML = output;
+
+                    // show Next Level link if unlocked
+                    if (data.success && data.next_level) {
+                        document.getElementById('next-level').innerHTML =
+                            `<a href="/sql-game/${data.next_level}">➡️ Go to Next Level</a>`;
+                    }
                 });
         });
     </script>
