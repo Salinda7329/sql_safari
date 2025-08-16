@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>SQL Game</title>
+    <title>SQL Game - {{ $level->province }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         textarea {
@@ -19,8 +19,9 @@
 </head>
 
 <body>
-    <h2>SQL Game – Level 1</h2>
-    <p>👉 Task: Show tourist name, country, and check-in date of their bookings.</p>
+    <h2>SQL Travels – Province: {{ $level->province }}</h2>
+    <p><b>Story:</b> {{ $level->story }}</p>
+    <p><b>Task:</b> {{ $level->task }}</p>
 
     <form id="sqlForm">
         <textarea name="query" placeholder="Write your SQL here..."></textarea><br>
@@ -33,7 +34,7 @@
         document.getElementById('sqlForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            fetch('/sql-game/run', {
+            fetch('/sql-game/{{ $level->id }}/run', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

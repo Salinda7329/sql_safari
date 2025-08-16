@@ -7,30 +7,34 @@ use Illuminate\Support\Facades\DB;
 
 class SqlGameController extends Controller
 {
-    public function index()
+    public function showLevel($level)
     {
-        return view('sql-game');
+        // Load level data from DB
+        $levelData = DB::table('levels')->where('id', $level)->first();
+        if (!$levelData) abort(404);
+
+        return view('sql-game', ['level' => $levelData]);
     }
 
-    public function runQuery(Request $request)
+    public function runQuery(Request $request, $level)
     {
         $userQuery = $request->input('query');
 
-        //Correct Answer for Level 1
-        $expectedQuery = "SELECT name, country, check_in
-                          FROM tourists t
-                          JOIN bookings b ON t.tourist_id = b.tourist_id";
+        // Get expected query from DB
+        $levelData = DB::table('levels')->where('id', $level)->first();
+        if (!$levelData) {
+            return response()->json(['success' => false, 'message' => 'Level not found']);
+        }
+        $expectedQuery = $levelData->expected_query;
 
         try {
-            // Run user's query
             $userResult = DB::select($userQuery);
             $expectedResult = DB::select($expectedQuery);
 
-            // Compare results
             if ($userResult == $expectedResult) {
                 return response()->json([
                     'success' => true,
-                    'message' => "Correct! Well done!",
+                    'message' => "Correct! You’ve cleared " . $levelData->province . " Province!",
                     'result' => $userResult
                 ]);
             } else {

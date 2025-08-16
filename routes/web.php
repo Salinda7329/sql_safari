@@ -8,5 +8,9 @@ Route::get('/', function () {
 });
 
 
-Route::get('/sql-game', [SqlGameController::class, 'index']);
-Route::post('/sql-game/run', [SqlGameController::class, 'runQuery']);
+// Route::get('/sql-game', [SqlGameController::class, 'index']);
+// Route::post('/sql-game/run', [SqlGameController::class, 'runQuery']);
+
+Route::get('/sql-game/{level}', [SqlGameController::class, 'showLevel']);
+Route::post('/sql-game/{level}/run', [SqlGameController::class, 'runQuery']);
+
