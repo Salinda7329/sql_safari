@@ -10,26 +10,40 @@ class SqlGameController extends Controller
     public function showLevel($level)
     {
         $playerId = 1;
-        $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
-        if (!$progress) abort(403, 'Player progress not found');
+        $progress = DB::table('player_progress')
+            ->where('player_id', $playerId)
+            ->first();
 
-        // ✅ Redirect to current_level if URL mismatch
+        if (!$progress) {
+            abort(403, 'Player progress not found');
+        }
+
+        //Redirect to current_level if URL mismatch
         if ($level != $progress->current_level) {
             return redirect("/sql-game/{$progress->current_level}");
         }
 
         $levelData = DB::table('levels')->where('id', $level)->first();
-        if (!$levelData) abort(404);
+        if (!$levelData) {
+            abort(404);
+        }
 
-        // load current task
-        $currentTask = DB::table('level_tasks')->where('id', $progress->current_task_id)->first();
+        // Load current task (with all columns including new ones)
+        $currentTask = DB::table('level_tasks')
+            ->where('id', $progress->current_task_id)
+            ->first();
+
+        if (!$currentTask) {
+            abort(404, 'Task not found');
+        }
 
         return view("level{$level}", [
-            'level' => $levelData,
-            'task' => $currentTask,
+            'level'    => $levelData,
+            'task'     => $currentTask,
             'progress' => $progress
         ]);
     }
+
 
 
 
@@ -95,15 +109,17 @@ class SqlGameController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            // ❌ Syntax/runtime error
             $remainingAttempts = max(0, $progress->attempts_left - 1);
-            DB::table('player_progress')->where('player_id', $playerId)->update(['attempts_left' => $remainingAttempts]);
+
+            DB::table('player_progress')->where('player_id', $playerId)
+                ->update(['attempts_left' => $remainingAttempts]);
 
             return response()->json([
                 'success' => false,
                 'message' => "⚠ Error: " . $e->getMessage(),
                 'attempts_left' => $remainingAttempts,
-                'clue' => $task->clue
+                'clue' => $remainingAttempts > 0 ? $task->clue : null,
+                'help' => $remainingAttempts == 0 ? $task->help : null
             ]);
         }
     }

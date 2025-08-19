@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap Modal -->
+    <!-- Character messages Bootstrap Modal -->
     <div class="modal fade" id="dialogueModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -46,6 +46,22 @@
             </div>
         </div>
     </div>
+
+    {{-- Help Guide Model  --}}
+    <div class="modal fade" id="helpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">📖 Help Guide</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="help-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('styles')
@@ -128,29 +144,39 @@
             };
         }
 
+        function showHelpModal(helpText) {
+            document.getElementById("help-content").innerHTML = helpText;
+            const helpModal = new bootstrap.Modal(document.getElementById("helpModal"), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            helpModal.show();
+        }
+
+
 
         // 🔹 On page load → show dialogue chain with Nila → Alex → Nila
         document.addEventListener("DOMContentLoaded", () => {
             showDialogueChain([{
                     speaker: "nila",
-                    text: "🌴 Welcome to Sri Lanka! I am Nila, your tour guide. I’ll help you practice SQL by finding hotels in Colombo. 🌆"
+                    text: @json($task->introduction) // ✅ Nila says intro
                 },
                 {
                     speaker: "alex",
-                    text: "Hi Nila! Sounds interesting, I’m ready to try.",
+                    text: @json($task->task_accepting), // ✅ Alex replies
                     action: () => {
                         document.getElementById("db-table-preview").classList.remove("d-none");
                     }
                 },
                 {
                     speaker: "nila",
-                    text: "Great! Let’s begin with something simple, Alex. Show me all the hotels in our database.",
+                    text: @json($task->task), // ✅ Nila gives the actual task
                     action: () => {
                         document.getElementById("task-text-box").classList.remove("d-none");
                     }
                 }
             ], () => {
-                // Reveal character images after dialogues finish
+                // Reveal characters
                 document.getElementById("nila-img").classList.remove("d-none");
                 document.getElementById("alex-img").classList.remove("d-none");
             });
@@ -213,12 +239,18 @@
                             setTimeout(() => window.location.reload(), 2500);
                         }
                     } else {
-                        let speaker = Math.random() > 0.5 ? "nila" : "ravi";
-                        showDialogueChain([{
-                            speaker: speaker,
-                            text: data.clue ? "Hint: " + data.clue : data.message
-                        }]);
+                        if (data.attempts_left > 0) {
+                            // Wrong but still attempts left
+                            showDialogueChain([{
+                                speaker: "ravi",
+                                text: data.clue ? "💡 " + data.clue : data.message
+                            }]);
+                        } else {
+                            // ❌ All attempts failed → show HELP modal
+                            showHelpModal(@json($task->help));
+                        }
                     }
+
                 });
         });
 
