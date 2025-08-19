@@ -1,0 +1,38 @@
+Page and query
+1.	page 1
+1.1.	Show all hotels.
+1.2.	See tourist names and their country.
+1.3.	List all nationalities of tourists.
+2.	Page 2
+2.1.	Find tourists from Mexico.
+2.2.	Find hotels in Kandy under Rs. 5000.
+2.3.	Find Spanish tourists whose names start with G.
+2.4.	Show tourists from Germany or Spain.
+3.	Page 3
+3.1.	Sort hotels by price.
+3.2.	Show the first 3 tourists.
+3.3.	Exclude tourists from Spain.
+4.	Page 4
+4.1.	Show hotels with their province.
+4.2.	Show all tourists, even if no booking (LEFT JOIN).
+4.3.	Merge list of countries and cities.
+5.	Page 5
+5.1.	Count tourists per country.
+5.2.	Find minimum hotel price.
+5.3.	Show hotels priced between 4000 and 6000.
+6.	Page 6
+6.1.	Cities with more than 2 hotels.
+6.2.	Tourists who made more than 1 booking
+7.	Page 7
+7.1.	Hotels cheaper than average.
+7.2.	Show tourists who have at least one booking.
+
+
+8.	Page 8
+8.1.	Add a new hotel.
+8.2.	Update hotel price.
+8.3.	Delete duplicates.
+9.	Page 9
+9.1.	Create a view for all hotels with WiFi.
+9.2.	Generate a report combining tourists, hotels, and bookings.
+9.3.	Find tourists who stayed in more than 1 province.
