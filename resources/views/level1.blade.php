@@ -22,11 +22,7 @@
             <div id="result" class="result-box mt-3"></div>
         </div>
 
-        <div class="db-preview mt-4 d-none" id="db-table-preview">
-            <h3>📊 Database Preview</h3>
-            <div id="db-tables"></div>
-        </div>
-
+        <div id="reference-tables" class="mt-4 d-none"></div>
 
         <div class="attempts-box mt-3">
             Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
@@ -116,7 +112,7 @@
 
         function setDialogue(speaker, message) {
             document.getElementById("dialogue-character").src = images[speaker] || "";
-            document.getElementById("dialogue-text").textContent = message;
+            document.getElementById("dialogue-text").innerHTML = message; // allow HTML for buttons
         }
 
         function showDialogueChain(dialogues, onComplete) {
@@ -144,6 +140,51 @@
             };
         }
 
+        function loadReferenceTables(taskId) {
+            fetch(`/sql-game/reference-tables/${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("reference-tables");
+                    container.innerHTML = "";
+
+                    if (data.error) {
+                        container.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                        return;
+                    }
+
+                    for (const [table, info] of Object.entries(data)) {
+                        if (info.error) {
+                            container.innerHTML += `<p class="text-danger">${info.error}</p>`;
+                            continue;
+                        }
+
+                        let html = `<h5 class="mt-3">📊 ${table}</h5>`;
+                        html += "<table class='table table-bordered table-sm'><thead><tr>";
+
+                        info.columns.forEach(col => {
+                            html += `<th>${col}</th>`;
+                        });
+                        html += "</tr></thead><tbody>";
+
+                        info.rows.forEach(row => {
+                            html += "<tr>";
+                            info.columns.forEach(col => {
+                                html += `<td>${row[col] ?? ''}</td>`;
+                            });
+                            html += "</tr>";
+                        });
+
+                        html += "</tbody></table>";
+                        container.innerHTML += html;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById("reference-tables").innerHTML =
+                        "<p class='text-danger'>Failed to load reference tables.</p>";
+                });
+        }
+
         function showHelpModal(helpText) {
             document.getElementById("help-content").innerHTML = helpText;
             const helpModal = new bootstrap.Modal(document.getElementById("helpModal"), {
@@ -153,38 +194,29 @@
             helpModal.show();
         }
 
-
-
         // 🔹 On page load → show dialogue chain with Nila → Alex → Nila
         document.addEventListener("DOMContentLoaded", () => {
             showDialogueChain([{
                     speaker: "nila",
-                    text: @json($task->introduction) // ✅ Nila says intro
+                    text: @json($task->introduction)
                 },
                 {
                     speaker: "alex",
-                    text: @json($task->task_accepting), // ✅ Alex replies
-                    action: () => {
-                        document.getElementById("db-table-preview").classList.remove("d-none");
-                    }
+                    text: @json($task->task_accepting),
+                    action: () => document.getElementById("reference-tables").classList.remove("d-none")
                 },
                 {
                     speaker: "nila",
-                    text: @json($task->task), // ✅ Nila gives the actual task
-                    action: () => {
-                        document.getElementById("task-text-box").classList.remove("d-none");
-                    }
+                    text: @json($task->task),
+                    action: () => document.getElementById("task-text-box").classList.remove("d-none")
                 }
             ], () => {
-                // Reveal characters
                 document.getElementById("nila-img").classList.remove("d-none");
                 document.getElementById("alex-img").classList.remove("d-none");
             });
         });
 
-
-
-        // Run query logic stays the same
+        // Run query logic
         document.getElementById('run-btn').addEventListener('click', function() {
             let query = document.getElementById('query-box').value;
 
@@ -200,91 +232,48 @@
                     })
                 })
                 .then(res => res.json())
-                .then(async data => {
+                .then(data => {
                     if (data.attempts_left !== undefined) {
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
 
                     if (data.success) {
-                        const taskDialogues = {
-                            1: {
-                                speaker: "nila",
-                                text: "✅ Good work, Alex!"
-                            },
-                            2: {
-                                speaker: "ravi",
-                                text: "Great job! Now, can you list the tourists and where they come from?"
-                            },
-                            3: {
-                                speaker: "nila",
-                                text: "Perfect! Now, can you show me the different nationalities of all tourists?"
-                            }
-                        };
-
-                        if (taskDialogues[{{ $task->id }}]) {
-                            showDialogueChain([taskDialogues[{{ $task->id }}]]);
-                        }
-
+                        // ✅ Success dialogues
                         if ({{ $task->id }} == 3) {
+                            // 🎉 End of level → show redirect button
                             showDialogueChain([{
                                     speaker: "nila",
                                     text: "🎉 Excellent start, Alex! You’ve mastered the basics."
                                 },
                                 {
+                                    speaker: "alex",
+                                    text: "I'll stay in Colombo Grand Hotel"
+                                },
+                                {
                                     speaker: "nila",
-                                    text: "Let’s head to Kandy next!"
+                                    text: "Let’s head to Kandy next! <br><br><button class='btn btn-success' onclick=\"window.location.href='/sql-game/2'\">Go to Level 2</button>"
                                 }
-                            ], () => window.location.href = "/sql-game/2");
+                            ]);
                         } else {
-                            setTimeout(() => window.location.reload(), 2500);
+                            // 🔹 Normal task success → show Next Task button
+                            showDialogueChain([{
+                                speaker: "nila",
+                                text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
+                            }]);
                         }
                     } else {
                         if (data.attempts_left > 0) {
-                            // Wrong but still attempts left
                             showDialogueChain([{
                                 speaker: "ravi",
                                 text: data.clue ? "💡 " + data.clue : data.message
                             }]);
                         } else {
-                            // ❌ All attempts failed → show HELP modal
                             showHelpModal(@json($task->help));
                         }
                     }
-
                 });
         });
 
-        function loadSchema() {
-            fetch(`/sql-game/{{ $level->id }}/schema`)
-                .then(res => res.json())
-                .then(data => {
-                    let html = `<h5 class="mb-3">Table: <code>${data.table}</code></h5>`;
-                    html += '<table class="table table-bordered table-striped">';
-
-                    // Table headers
-                    html += '<thead><tr>';
-                    data.columns.forEach(col => {
-                        html += `<th>${col.Field}</th>`;
-                    });
-                    html += '</tr></thead><tbody>';
-
-                    // Rows
-                    data.rows.forEach(row => {
-                        html += '<tr>';
-                        data.columns.forEach(col => {
-                            html += `<td>${row[col.Field]}</td>`;
-                        });
-                        html += '</tr>';
-                    });
-
-                    html += '</tbody></table>';
-                    document.getElementById('db-tables').innerHTML = html;
-                });
-        }
-
-        // 🔹 Load schema preview when page loads
-        document.addEventListener("DOMContentLoaded", () => {
-            loadSchema();
-        });
+        document.addEventListener("DOMContentLoaded",loadReferenceTables({{ $task->id }}));
     </script>
 @endsection

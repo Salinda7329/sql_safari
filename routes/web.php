@@ -11,4 +11,4 @@ Route::get('/', function () {
 Route::get('/sql-game/{level}', [SqlGameController::class, 'showLevel']);
 Route::post('/sql-game/{level}/run', [SqlGameController::class, 'runQuery']);
 
-Route::get('/sql-game/{level}/schema', [SqlGameController::class, 'schema']);
+Route::get('/sql-game/reference-tables/{taskId}', [SqlGameController::class, 'getReferenceTables']);
