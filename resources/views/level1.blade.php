@@ -9,30 +9,214 @@
         </div>
 
         <div class="character-section">
-            <img src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila">
-            <div class="speech-bubble">
-                Welcome to Sri Lanka! I am <b>Nila</b>, your tour guide.
-                I’ll help you practice SQL by finding hotels in Colombo. 🌆
-            </div>
-            <img src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex">
+            <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
+            <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
+            <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
         </div>
 
-        <div class="task-box">
+        <div class="task-box d-none" id="task-text-box">
             <h3>📝 Task</h3>
             <p>{{ $task->task }}</p>
-            <textarea id="query-box" class="sql-input" rows="3" placeholder="Write your SQL query here..."></textarea>
-            <button id="run-btn" class="run-query-btn">Run Query</button>
-            <div id="result" class="result-box"></div>
+            <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
+            <button id="run-btn" class="btn btn-primary">Run Query</button>
+            <div id="result" class="result-box mt-3"></div>
         </div>
 
-        <div class="attempts-box">
+        <div id="reference-tables" class="mt-4 d-none"></div>
+
+        <div class="attempts-box mt-3">
             Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
         </div>
     </div>
+
+    <!-- Character messages Bootstrap Modal -->
+    <div class="modal fade" id="dialogueModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-3">
+                <img id="dialogue-character" src="" class="img-fluid mx-auto d-block" style="max-width:150px;">
+                <div class="modal-body">
+                    <p id="dialogue-text" class="fs-5"></p>
+                    <button type="button" id="dialogue-continue" class="btn btn-warning mt-3">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Help Guide Model  --}}
+    <div class="modal fade" id="helpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">📖 Help Guide</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="help-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+
+@section('styles')
+    <style>
+        .character-section {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin: 30px 0;
+        }
+
+        .character {
+            width: 150px;
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .db-preview table {
+            background: #fff;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+        }
+
+        .db-preview th {
+            background: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .db-preview tr:nth-child(even) {
+            background: #8f8c8c;
+        }
+    </style>
 @endsection
 
 @section('scripts')
     <script>
+        const dialogueModalEl = document.getElementById('dialogueModal');
+        const dialogueModal = new bootstrap.Modal(dialogueModalEl, {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        const images = {
+            "nila": "{{ asset('images/nila.png') }}",
+            "ravi": "{{ asset('images/ravi.png') }}",
+            "alex": "{{ asset('images/alex.png') }}"
+        };
+
+        function setDialogue(speaker, message) {
+            document.getElementById("dialogue-character").src = images[speaker] || "";
+            document.getElementById("dialogue-text").innerHTML = message; // allow HTML for buttons
+        }
+
+        function showDialogueChain(dialogues, onComplete) {
+            let index = 0;
+
+            function renderDialogue() {
+                setDialogue(dialogues[index].speaker, dialogues[index].text);
+                if (typeof dialogues[index].action === "function") {
+                    dialogues[index].action();
+                }
+            }
+
+            renderDialogue();
+            dialogueModal.show();
+
+            const btn = document.getElementById("dialogue-continue");
+            btn.onclick = () => {
+                index++;
+                if (index < dialogues.length) {
+                    renderDialogue();
+                } else {
+                    dialogueModal.hide();
+                    if (onComplete) onComplete();
+                }
+            };
+        }
+
+        function loadReferenceTables(taskId) {
+            fetch(`/sql-game/reference-tables/${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("reference-tables");
+                    container.innerHTML = "";
+
+                    if (data.error) {
+                        container.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                        return;
+                    }
+
+                    for (const [table, info] of Object.entries(data)) {
+                        if (info.error) {
+                            container.innerHTML += `<p class="text-danger">${info.error}</p>`;
+                            continue;
+                        }
+
+                        let html = `<h5 class="mt-3">📊 ${table}</h5>`;
+                        html += "<table class='table table-bordered table-sm'><thead><tr>";
+
+                        info.columns.forEach(col => {
+                            html += `<th>${col}</th>`;
+                        });
+                        html += "</tr></thead><tbody>";
+
+                        info.rows.forEach(row => {
+                            html += "<tr>";
+                            info.columns.forEach(col => {
+                                html += `<td>${row[col] ?? ''}</td>`;
+                            });
+                            html += "</tr>";
+                        });
+
+                        html += "</tbody></table>";
+                        container.innerHTML += html;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById("reference-tables").innerHTML =
+                        "<p class='text-danger'>Failed to load reference tables.</p>";
+                });
+        }
+
+        function showHelpModal(helpText) {
+            document.getElementById("help-content").innerHTML = helpText;
+            const helpModal = new bootstrap.Modal(document.getElementById("helpModal"), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            helpModal.show();
+        }
+
+        // 🔹 On page load → show dialogue chain with Nila → Alex → Nila
+        document.addEventListener("DOMContentLoaded", () => {
+            showDialogueChain([{
+                    speaker: "nila",
+                    text: @json($task->introduction)
+                },
+                {
+                    speaker: "alex",
+                    text: @json($task->task_accepting),
+                    action: () => document.getElementById("reference-tables").classList.remove("d-none")
+                },
+                {
+                    speaker: "nila",
+                    text: @json($task->task),
+                    action: () => document.getElementById("task-text-box").classList.remove("d-none")
+                }
+            ], () => {
+                document.getElementById("nila-img").classList.remove("d-none");
+                document.getElementById("alex-img").classList.remove("d-none");
+            });
+        });
+
+        // Run query logic
         document.getElementById('run-btn').addEventListener('click', function() {
             let query = document.getElementById('query-box').value;
 
@@ -49,23 +233,47 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    let resultBox = document.getElementById('result');
-                    resultBox.innerHTML = `<p>${data.message}</p>`;
-                    if (data.result) {
-                        resultBox.innerHTML += `<pre>${JSON.stringify(data.result, null, 2)}</pre>`;
-                    }
-                    if (data.clue) {
-                        resultBox.innerHTML += `<p class="hint">💡 Hint: ${data.clue}</p>`;
-                    }
                     if (data.attempts_left !== undefined) {
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
+
                     if (data.success) {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
+                        // ✅ Success dialogues
+                        if ({{ $task->id }} == 3) {
+                            // 🎉 End of level → show redirect button
+                            showDialogueChain([{
+                                    speaker: "nila",
+                                    text: "🎉 Excellent start, Alex! You’ve mastered the basics."
+                                },
+                                {
+                                    speaker: "alex",
+                                    text: "I'll stay in Colombo Grand Hotel"
+                                },
+                                {
+                                    speaker: "nila",
+                                    text: "Let’s head to Kandy next! <br><br><button class='btn btn-success' onclick=\"window.location.href='/sql-game/2'\">Go to Level 2</button>"
+                                }
+                            ]);
+                        } else {
+                            // 🔹 Normal task success → show Next Task button
+                            showDialogueChain([{
+                                speaker: "nila",
+                                text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
+                            }]);
+                        }
+                    } else {
+                        if (data.attempts_left > 0) {
+                            showDialogueChain([{
+                                speaker: "ravi",
+                                text: data.clue ? "💡 " + data.clue : data.message
+                            }]);
+                        } else {
+                            showHelpModal(@json($task->help));
+                        }
                     }
                 });
         });
+
+        document.addEventListener("DOMContentLoaded",loadReferenceTables({{ $task->id }}));
     </script>
 @endsection
