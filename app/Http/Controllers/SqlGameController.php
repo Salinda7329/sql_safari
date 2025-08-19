@@ -107,4 +107,27 @@ class SqlGameController extends Controller
             ]);
         }
     }
+
+    public function schema($level)
+    {
+        // For now, pick table(s) based on level
+        $tableName = 'hotels'; // Example: Level 1 uses hotels table
+        if ($level == 2) {
+            $tableName = 'tourists';
+        } elseif ($level == 3) {
+            $tableName = 'bookings';
+        }
+
+        // Get column metadata
+        $columns = DB::select("SHOW COLUMNS FROM {$tableName}");
+
+        // Get first 5 rows as preview
+        $rows = DB::table($tableName)->limit(5)->get();
+
+        return response()->json([
+            'table'   => $tableName,
+            'columns' => $columns,
+            'rows'    => $rows
+        ]);
+    }
 }
