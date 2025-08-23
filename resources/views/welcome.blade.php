@@ -581,7 +581,7 @@
 
             // Add some delay for effect, then redirect
             setTimeout(() => {
-                window.location.href = '/introduction/section_1';
+                window.location.href = '/introduction/section/1';
             }, 500);
         }
 

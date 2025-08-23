@@ -24,10 +24,11 @@
     <footer class="game-footer">
         <button class="nav-btn" onclick="window.history.back()">⬅ Back</button>
 
-        <form action="{{ route('sql.next') }}" method="POST" style="display:inline;">
+        <form action="{{ route('sql.intro.next') }}" method="GET" style="display:inline;">
             @csrf
-            <button type="submit" class="btn btn-primary">Next ▶</button>
+            <button type="submit" class="btn btn-primary">Next</button>
         </form>
+
     </footer>
 
 
