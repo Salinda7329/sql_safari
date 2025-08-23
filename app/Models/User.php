@@ -45,4 +45,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function progress()
+    {
+        return $this->hasOne(PlayerProgress::class, 'player_id');
+    }
+
+    public function achievements()
+    {
+        return $this->belongsToMany(
+            Achievement::class,
+            'player_achievements',
+            'user_id',
+            'achievement_id'
+        )->withTimestamps();
+    }
 }

@@ -107,7 +107,8 @@
         const images = {
             "nila": "{{ asset('images/nila.png') }}",
             "ravi": "{{ asset('images/ravi.png') }}",
-            "alex": "{{ asset('images/alex.png') }}"
+            "alex": "{{ asset('images/alex.png') }}",
+            "professor": "{{ asset('images/professor.png') }}"
         };
 
         function setDialogue(speaker, message) {
@@ -140,7 +141,7 @@
             };
         }
 
-        function loadReferenceTables(taskId) {
+        function loadReferenceTables(taskId, showRows = false, rows = []) {
             fetch(`/sql-game/reference-tables/${taskId}`)
                 .then(res => res.json())
                 .then(data => {
@@ -166,13 +167,16 @@
                         });
                         html += "</tr></thead><tbody>";
 
-                        info.rows.forEach(row => {
-                            html += "<tr>";
-                            info.columns.forEach(col => {
-                                html += `<td>${row[col] ?? ''}</td>`;
+                        // ✅ only show rows if flag is true
+                        if (showRows && rows.length > 0) {
+                            rows.forEach(row => {
+                                html += "<tr>";
+                                info.columns.forEach(col => {
+                                    html += `<td>${row[col] ?? ''}</td>`;
+                                });
+                                html += "</tr>";
                             });
-                            html += "</tr>";
-                        });
+                        }
 
                         html += "</tbody></table>";
                         container.innerHTML += html;
@@ -184,6 +188,7 @@
                         "<p class='text-danger'>Failed to load reference tables.</p>";
                 });
         }
+
 
         function showHelpModal(helpText) {
             document.getElementById("help-content").innerHTML = helpText;
@@ -238,30 +243,37 @@
                     }
 
                     if (data.success) {
-                        // ✅ Success dialogues
-                        if ({{ $task->id }} == 3) {
-                            // 🎉 End of level → show redirect button
-                            showDialogueChain([{
+                        loadReferenceTables({{ $task->id }}, true, data.result);
+
+                        // ⏳ wait 3 seconds before showing success dialogues
+                        setTimeout(() => {
+                            // ✅ Success dialogues
+                            if ({{ $task->id }} == 3) {
+                                // 🎉 End of level → show redirect button
+                                showDialogueChain([{
+                                        speaker: "alex",
+                                        text: "I'll stay in Colombo Grand Hotel"
+                                    },
+                                    {
+                                        speaker: "nila",
+                                        text: "Okay,Let’s check in to the hotel"
+                                    },
+                                    {
+                                        speaker: "professor",
+                                        text: "You have mastered the basics! Now it's time to earn your first badge. <br><br><button class='btn btn-success' onclick=\"window.location.href='/achievements'\">🎖️ Get Badge</button>"
+                                    },
+                                ]);
+                            } else {
+                                // 🔹 Normal task success → show Next Task button
+                                showDialogueChain([{
                                     speaker: "nila",
-                                    text: "🎉 Excellent start, Alex! You’ve mastered the basics."
-                                },
-                                {
-                                    speaker: "alex",
-                                    text: "I'll stay in Colombo Grand Hotel"
-                                },
-                                {
-                                    speaker: "nila",
-                                    text: "Let’s head to Kandy next! <br><br><button class='btn btn-success' onclick=\"window.location.href='/sql-game/2'\">Go to Level 2</button>"
-                                }
-                            ]);
-                        } else {
-                            // 🔹 Normal task success → show Next Task button
-                            showDialogueChain([{
-                                speaker: "nila",
-                                text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
-                            }]);
-                        }
+                                    text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
+                                }]);
+                            }
+                        }, 3000); // delay in milliseconds
+
                     } else {
+                        // ❌ Incorrect query
                         if (data.attempts_left > 0) {
                             showDialogueChain([{
                                 speaker: "ravi",
@@ -274,6 +286,9 @@
                 });
         });
 
-        document.addEventListener("DOMContentLoaded",loadReferenceTables({{ $task->id }}));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadReferenceTables({{ $task->id }});
+        });
     </script>
 @endsection

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Player;
+use App\Models\Achievement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -196,5 +198,16 @@ class SqlGameController extends Controller
         }
 
         return response()->json($result);
+    }
+
+    public function awardBadge($playerId, $badgeName)
+    {
+        $player = Player::find($playerId);
+        $achievement = Achievement::where('name', $badgeName)->first();
+
+        if ($player && $achievement) {
+            $player->achievements()->syncWithoutDetaching([$achievement->id]);
+            $player->increment('score', 100); // add points
+        }
     }
 }
