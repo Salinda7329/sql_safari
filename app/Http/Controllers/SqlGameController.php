@@ -23,6 +23,7 @@ class SqlGameController extends Controller
     public function showLevel($level)
     {
         $playerId = 1;
+
         $progress = DB::table('player_progress')
             ->where('player_id', $playerId)
             ->first();
@@ -31,7 +32,78 @@ class SqlGameController extends Controller
             abort(403, 'Player progress not found');
         }
 
-        //Redirect to current_level if URL mismatch
+        // --- Handle "Next" with ?advance=1 ---
+        if (request()->boolean('advance')) {
+            DB::transaction(function () use (&$progress, $playerId) {
+                // Fresh progress in tx
+                $progress = DB::table('player_progress')->where('player_id', $playerId)->lockForUpdate()->first();
+
+                $currentLevelId = (int) $progress->current_level;
+                $currentTaskId  = (int) $progress->current_task_id;
+
+                $currentTask = DB::table('level_tasks')->where('id', $currentTaskId)->first();
+                if (!$currentTask) {
+                    abort(404, 'Current task not found');
+                }
+
+                // Choose an order column for tasks
+                $taskOrderCol = DB::getSchemaBuilder()->hasColumn('level_tasks', 'sequence') ? 'sequence'
+                    : (DB::getSchemaBuilder()->hasColumn('level_tasks', 'order')    ? 'order'
+                        : 'id');
+
+                // Next task in same level
+                $nextTask = DB::table('level_tasks')
+                    ->where('level_id', $currentLevelId)
+                    ->where($taskOrderCol, '>', $currentTask->{$taskOrderCol})
+                    ->orderBy($taskOrderCol, 'asc')
+                    ->first();
+
+                if ($nextTask) {
+                    DB::table('player_progress')
+                        ->where('player_id', $playerId)
+                        ->update(['current_task_id' => $nextTask->id]);
+
+                    // update in-memory progress for the redirect below
+                    $progress->current_task_id = $nextTask->id;
+                    return;
+                }
+
+                // No more tasks -> move to next level
+                $nextLevel = DB::table('levels')
+                    ->where('id', '>', $currentLevelId)
+                    ->orderBy('id', 'asc')
+                    ->first();
+
+                if (!$nextLevel) {
+                    // End of game: send them to achievements
+                    redirect('/achievements')->send();
+                    exit;
+                }
+
+                $firstTaskNextLevel = DB::table('level_tasks')
+                    ->where('level_id', $nextLevel->id)
+                    ->orderBy($taskOrderCol, 'asc')
+                    ->first();
+
+                if (!$firstTaskNextLevel) {
+                    abort(500, 'Next level has no tasks configured.');
+                }
+
+                DB::table('player_progress')->where('player_id', $playerId)->update([
+                    'current_level'   => $nextLevel->id,
+                    'current_task_id' => $firstTaskNextLevel->id,
+                ]);
+
+                $progress->current_level   = $nextLevel->id;
+                $progress->current_task_id = $firstTaskNextLevel->id;
+            });
+
+            // After advancing, always go to the player's current level page
+            return redirect("/sql-game/{$progress->current_level}");
+        }
+        // --- end advance handling ---
+
+        // Redirect to current_level if URL mismatch
         if ($level != $progress->current_level) {
             return redirect("/sql-game/{$progress->current_level}");
         }
@@ -41,7 +113,6 @@ class SqlGameController extends Controller
             abort(404);
         }
 
-        // Load current task (with all columns including new ones)
         $currentTask = DB::table('level_tasks')
             ->where('id', $progress->current_task_id)
             ->first();
