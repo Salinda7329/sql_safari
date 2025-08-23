@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Schema;
 
 class SqlGameController extends Controller
 {
+    public function showIntroduction($section)
+    {
+        $validSections = [1, 2, 3]; // Define valid sections
+        if (!in_array($section, $validSections)) {
+            abort(404);
+        }
+
+        return view("introductions.section_{$section}", ['section' => $section]);
+    }
+
     public function showLevel($level)
     {
         $playerId = 1;

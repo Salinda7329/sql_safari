@@ -581,7 +581,7 @@
 
             // Add some delay for effect, then redirect
             setTimeout(() => {
-                window.location.href = '/sql-game/1';
+                window.location.href = '/introduction/section_1';
             }, 500);
         }
 
