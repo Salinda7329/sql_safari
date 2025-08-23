@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 23, 2025 at 06:03 PM
+-- Generation Time: Aug 19, 2025 at 07:06 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,35 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `sql_game_db`
 --
-
--- --------------------------------------------------------
-
---
--- Table structure for table `achievements`
---
-
-CREATE TABLE `achievements` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
-  `badge_image` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `achievements`
---
-
-INSERT INTO `achievements` (`id`, `name`, `description`, `badge_image`, `created_at`) VALUES
-(1, 'Western Explorer', 'Completed Level 1 – Western Province (Colombo).', 'badges/western.png', '2025-08-23 15:10:21'),
-(2, 'Central Adventurer', 'Completed Level 2 – Central Province (Kandy).', 'badges/central.png', '2025-08-23 15:10:21'),
-(3, 'Southern Surfer', 'Completed Level 3 – Southern Province (Galle).', 'badges/southern.png', '2025-08-23 15:10:21'),
-(4, 'Northern Voyager', 'Completed Level 4 – Northern Province (Jaffna).', 'badges/northern.png', '2025-08-23 15:10:21'),
-(5, 'Eastern Relaxer', 'Completed Level 5 – Eastern Province (Pasikuda).', 'badges/eastern.png', '2025-08-23 15:10:21'),
-(6, 'Ancient Seeker', 'Completed Level 6 – North Central Province (Anuradhapura).', 'badges/north_central.png', '2025-08-23 15:10:21'),
-(7, 'Hill Country Explorer', 'Completed Level 7 – Uva Province (Badulla).', 'badges/uva.png', '2025-08-23 15:10:21'),
-(8, 'Gem Hunter', 'Completed Level 8 – Sabaragamuwa Province (Ratnapura).', 'badges/sabaragamuwa.png', '2025-08-23 15:10:21'),
-(9, 'SQL Master Explorer', 'Completed Level 9 – North Western Province (Kurunegala).', 'badges/north_western.png', '2025-08-23 15:10:21');
 
 -- --------------------------------------------------------
 
@@ -233,9 +204,9 @@ CREATE TABLE `level_tasks` (
 --
 
 INSERT INTO `level_tasks` (`id`, `level_id`, `introduction`, `reference_table`, `task`, `task_accepting`, `expected_query`, `clue`, `help`) VALUES
-(1, 1, 'Now, you should select a hotel to stay in Colombo.', 'Hotels', 'First, show all hotels.', 'Okay, how should I select one?', 'SELECT * FROM Hotels', 'Use SELECT * to see all rows.', 'The `SELECT` statement is used to fetch data from a table.\n\nBasic usage:\n```sql\nSELECT * FROM table_name;\n```\nThis returns all rows and columns.\nExample:\n```sql\nSELECT * FROM Hotels;\n```'),
-(2, 1, 'Alex, you have many choices.', 'Hotels', 'Select the hotels from Colombo.', 'Alright, I think I should filter the hotels in Colombo.', 'select * from hotels where city=\"colombo\"', 'Pick specific columns.', 'Instead of `*`, list the columns you need:\n```sql\nSELECT name, country FROM Tourists;\n```'),
-(3, 1, 'Hmm, I wonder what hotel you choose.', 'Hotels', 'Ok, show the details of the \"Colombo Grand Hotel\"', 'Let me select the \"Colombo Grand Hotel\"', 'SELECT * FROM `hotels` WHERE name=\"Colombo Grand Hotel\"', 'WHERE name=\"Colombo Grand Hotel\"', 'The `DISTINCT` keyword removes duplicates:\n```sql\nSELECT DISTINCT country FROM Tourists;\n```'),
+(1, 1, '🌴 Welcome to Sri Lanka, Alex! We’ve just reached Colombo, and I’d love to check which hotels are available here. Could you help me look them up?', 'Hotels', 'Show all hotels.', 'Okay, I’ll try to list all hotels for you.', 'SELECT * FROM Hotels', 'Use SELECT * to see all rows.', 'The `SELECT` statement is used to fetch data from a table.\n\nBasic usage:\n```sql\nSELECT * FROM table_name;\n```\nThis returns all rows and columns.\nExample:\n```sql\nSELECT * FROM Hotels;\n```'),
+(2, 1, 'Alex, I’m curious about our visitors. Can you check their names and which country they are from?', 'Tourists', 'See tourist names and their country.', 'Alright, I think I should select only the required columns.', 'SELECT name, country FROM Tourists', 'Pick specific columns.', 'Instead of `*`, list the columns you need:\n```sql\nSELECT name, country FROM Tourists;\n```'),
+(3, 1, 'Hmm, I wonder what nationalities we have among our tourists. Could you check the different countries they come from?', 'Tourists', 'List all nationalities of tourists.', 'Let me try to show unique countries.', 'SELECT DISTINCT country FROM Tourists', 'DISTINCT removes duplicates.', 'The `DISTINCT` keyword removes duplicates:\n```sql\nSELECT DISTINCT country FROM Tourists;\n```'),
 (4, 2, 'We’re expecting some visitors from Mexico. Can you filter the list of tourists to show only them?', 'Tourists', 'Find tourists from Mexico.', 'Okay, let me filter with WHERE.', 'SELECT * FROM Tourists WHERE country=\"Mexico\"', 'Use WHERE condition.', '`WHERE` filters rows based on conditions:\n```sql\nSELECT * FROM Tourists WHERE country=\"Mexico\";\n```'),
 (5, 2, 'Hotels in Kandy can be pricey. Could you check which ones cost less than Rs. 5000?', 'Hotels', 'Find hotels in Kandy under Rs. 5000.', 'Got it, I need multiple conditions.', 'SELECT * FROM Hotels WHERE city=\"Kandy\" AND price < 5000', 'Filter by city and price.', 'Combine conditions with `AND`:\n```sql\nSELECT * FROM Hotels WHERE city=\"Kandy\" AND price < 5000;\n```'),
 (6, 2, 'I heard we have Spanish tourists visiting. Could you check which of them have names starting with G?', 'Tourists', 'Find Spanish tourists whose names start with G.', 'Okay, I’ll try LIKE with wildcards.', 'SELECT * FROM Tourists WHERE country=\"Spain\" AND name LIKE \"G%\"', 'LIKE with % is wildcard.', '`LIKE` allows pattern matching:\n```sql\nSELECT * FROM Tourists WHERE name LIKE \"G%\";\n```'),
@@ -296,32 +267,12 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `player_achievements`
---
-
-CREATE TABLE `player_achievements` (
-  `id` int(11) NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `achievement_id` int(11) NOT NULL,
-  `earned_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `player_achievements`
---
-
-INSERT INTO `player_achievements` (`id`, `user_id`, `achievement_id`, `earned_at`) VALUES
-(1, 1, 1, '2025-08-23 10:06:17');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `player_progress`
 --
 
 CREATE TABLE `player_progress` (
   `id` int(11) NOT NULL,
-  `player_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `player_id` int(11) DEFAULT NULL,
   `highest_level` int(11) DEFAULT 1,
   `current_level` int(11) DEFAULT 1,
   `current_task_id` int(11) DEFAULT 1,
@@ -381,7 +332,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('rJh3vE6caNMamrE91jNJKxqa3dZWv0PgdpXJkBtS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieE0wbksxMlFOdVBXdUpkT0FrQmgxek1JbWxCMEFpZVluOWhvWGNPMSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hY2hpZXZlbWVudHMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1755964949);
+('uIyuFKSYMUiMzAjXJeMA9WsYZEQV4DNHlIGAjnlT', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWWs4NFlDcExud2FJbHBJUzh0MnNQckV6bHJHTzhWVllCMDFVR1ZkNCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zcWwtZ2FtZS8yIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1755623117);
 
 -- --------------------------------------------------------
 
@@ -425,21 +376,8 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `users`
---
-
-INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Dineth', 'dinethk222@gmail.com', NULL, 'dinethk222@gmail.com', NULL, NULL, NULL);
-
---
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `achievements`
---
-ALTER TABLE `achievements`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `bookings`
@@ -514,19 +452,10 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
--- Indexes for table `player_achievements`
---
-ALTER TABLE `player_achievements`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `achievement_id` (`achievement_id`);
-
---
 -- Indexes for table `player_progress`
 --
 ALTER TABLE `player_progress`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_player_progress_user` (`player_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `provinces`
@@ -558,12 +487,6 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `achievements`
---
-ALTER TABLE `achievements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `bookings`
@@ -608,12 +531,6 @@ ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `player_achievements`
---
-ALTER TABLE `player_achievements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
 -- AUTO_INCREMENT for table `player_progress`
 --
 ALTER TABLE `player_progress`
@@ -635,7 +552,7 @@ ALTER TABLE `tourists`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -659,19 +576,6 @@ ALTER TABLE `hotels`
 --
 ALTER TABLE `level_tasks`
   ADD CONSTRAINT `level_tasks_ibfk_1` FOREIGN KEY (`level_id`) REFERENCES `levels` (`id`);
-
---
--- Constraints for table `player_achievements`
---
-ALTER TABLE `player_achievements`
-  ADD CONSTRAINT `player_achievements_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `player_achievements_ibfk_2` FOREIGN KEY (`achievement_id`) REFERENCES `achievements` (`id`);
-
---
--- Constraints for table `player_progress`
---
-ALTER TABLE `player_progress`
-  ADD CONSTRAINT `fk_player_progress_user` FOREIGN KEY (`player_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
