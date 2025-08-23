@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+{{-- at the very top of the template (or just before the form) --}}
+@php
+    $levelId = isset($level->id) ? (int) $level->id : (int) request()->route('level');
+@endphp
+
 @section('title', 'Section 1 – Arrival in Colombo')
 
 @section('content')
@@ -30,10 +35,11 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <form action="{{ route('sql.intro.complete', ['level' => $level->id]) }}" method="POST">
+                    <form action="{{ route('sql.intro.complete', ['level' => $levelId]) }}" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-primary">Start Level {{ $level->id }}</button>
+                        <button type="submit" class="btn btn-primary">Start Level {{ $levelId }}</button>
                     </form>
+
                 </div>
             </div>
         </div>
@@ -147,8 +153,7 @@
                 showDialogue(dialogues[index]);
             } else {
                 dialogueModal.hide();
-                // redirect to level 1 after dialogues finish
-                window.location.href = "/sql-game/1";
+                window.location.href = "/sql-game/{{ $levelId }}";
             }
         };
     </script>

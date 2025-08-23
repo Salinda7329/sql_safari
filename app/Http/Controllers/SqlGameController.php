@@ -10,14 +10,14 @@ use Illuminate\Support\Facades\Schema;
 
 class SqlGameController extends Controller
 {
-    public function showIntroduction($section)
+    public function showIntroduction(int $level)
     {
         $validSections = [1, 2, 3]; // Define valid sections
-        if (!in_array($section, $validSections)) {
+        if (!in_array($level, $validSections)) {
             abort(404);
         }
 
-        return view("introductions.section_{$section}", ['section' => $section]);
+        return view('introductions.section_'.$level, ['levelId' => $level]);
     }
 
     public function showLevel($level)

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 23, 2025 at 06:03 PM
+-- Generation Time: Aug 23, 2025 at 07:27 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.12
 
@@ -323,6 +323,7 @@ CREATE TABLE `player_progress` (
   `id` int(11) NOT NULL,
   `player_id` bigint(20) UNSIGNED DEFAULT NULL,
   `highest_level` int(11) DEFAULT 1,
+  `intro_status` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `current_level` int(11) DEFAULT 1,
   `current_task_id` int(11) DEFAULT 1,
   `attempts_left` int(11) DEFAULT 3
@@ -332,8 +333,8 @@ CREATE TABLE `player_progress` (
 -- Dumping data for table `player_progress`
 --
 
-INSERT INTO `player_progress` (`id`, `player_id`, `highest_level`, `current_level`, `current_task_id`, `attempts_left`) VALUES
-(1, 1, 2, 2, 4, 3);
+INSERT INTO `player_progress` (`id`, `player_id`, `highest_level`, `intro_status`, `current_level`, `current_task_id`, `attempts_left`) VALUES
+(1, 1, 2, 2, 2, 5, 3);
 
 -- --------------------------------------------------------
 
@@ -381,7 +382,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('rJh3vE6caNMamrE91jNJKxqa3dZWv0PgdpXJkBtS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieE0wbksxMlFOdVBXdUpkT0FrQmgxek1JbWxCMEFpZVluOWhvWGNPMSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hY2hpZXZlbWVudHMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1755964949);
+('rJh3vE6caNMamrE91jNJKxqa3dZWv0PgdpXJkBtS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieE0wbksxMlFOdVBXdUpkT0FrQmgxek1JbWxCMEFpZVluOWhvWGNPMSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zcWwtZ2FtZS9yZWZlcmVuY2UtdGFibGVzLzUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1755969875);
 
 -- --------------------------------------------------------
 
