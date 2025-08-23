@@ -53,11 +53,8 @@ class User extends Authenticatable
 
     public function achievements()
     {
-        return $this->belongsToMany(
-            Achievement::class,
-            'player_achievements',
-            'user_id',
-            'achievement_id'
-        )->withTimestamps();
+        return $this->belongsToMany(\App\Models\Achievement::class, 'player_achievements')
+            ->withPivot('earned_at')
+            ->withTimestamps(); // optional
     }
 }

@@ -3,28 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Achievement;
+use Illuminate\Support\Facades\DB;
 
 class LeaderboardController extends Controller
 {
     public function index()
     {
-        $leaderboard = \DB::table('users')
-            ->select(
-                'users.id',
-                'users.name',
-                \DB::raw('COUNT(player_achievements.id) as achievements_count'),
-                'player_progress.highest_level'
-            )
-            ->leftJoin('player_progress', 'users.id', '=', 'player_progress.player_id')
-            ->leftJoin('player_achievements', 'users.id', '=', 'player_achievements.user_id')
-            ->groupBy('users.id', 'users.name', 'player_progress.highest_level')
-            ->orderByDesc('achievements_count')
-            ->orderByDesc('player_progress.highest_level')
-            ->take(10)
+        // TEMP: force user id = 1 for all reads
+        $userId = 1;
+
+        // Left join to mark which achievements this user has earned
+        $achievements = Achievement::query()
+            ->leftJoin('player_achievements as pa', function ($join) use ($userId) {
+                $join->on('pa.achievement_id', '=', 'achievements.id')
+                    ->where('pa.user_id', '=', $userId);
+            })
+            ->select('achievements.*', DB::raw('pa.earned_at as earned_at'))
+            ->orderBy('achievements.id')
             ->get();
 
-        $player = auth()->user();
+        // Optional: show a friendly name even if users table has no id=1
+        $displayName = optional(DB::table('users')->where('id', $userId)->first())->name ?? 'Guest';
 
-        return view('leaderboard', compact('leaderboard', 'player'));
+        return view('achievements', [
+            'userName'     => $displayName,
+            'userId'       => $userId,
+            'achievements' => $achievements,
+        ]);
     }
 }

@@ -249,18 +249,19 @@
                         setTimeout(() => {
                             // ✅ Success dialogues
                             if ({{ $task->id }} == 3) {
-                                // 🎉 End of level → show redirect button
                                 showDialogueChain([{
                                         speaker: "alex",
                                         text: "I'll stay in Colombo Grand Hotel"
                                     },
                                     {
                                         speaker: "nila",
-                                        text: "Okay,Let’s check in to the hotel"
+                                        text: "Okay, let’s check in to the hotel"
                                     },
                                     {
                                         speaker: "professor",
-                                        text: "You have mastered the basics! Now it's time to earn your first badge. <br><br><button class='btn btn-success' onclick=\"window.location.href='/achievements'\">🎖️ Get Badge</button>"
+                                        text: `You have mastered the basics! Now it's time to earn your first badge.
+                   <br><br>
+                   <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`
                                     },
                                 ]);
                             } else {
@@ -271,7 +272,6 @@
                                 }]);
                             }
                         }, 3000); // delay in milliseconds
-
                     } else {
                         // ❌ Incorrect query
                         if (data.attempts_left > 0) {
@@ -285,6 +285,30 @@
                     }
                 });
         });
+
+        function awardBadge(id) {
+            fetch(`/achievements/award/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest', // <-- makes $request->ajax() true
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(async (res) => {
+                    if (!res.ok) throw new Error(await res.text());
+                    return res.json();
+                })
+                .then((data) => {
+                    alert(data.message || 'Badge awarded!');
+                    window.location.href = data.redirect || '/achievements';
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert('Failed to award badge. Check console/logs.');
+                });
+        }
+
 
 
         document.addEventListener("DOMContentLoaded", () => {
