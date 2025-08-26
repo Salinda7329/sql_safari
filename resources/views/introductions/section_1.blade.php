@@ -35,11 +35,7 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <form action="{{ route('sql.intro.complete', ['level' => $levelId]) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Start Level {{ $levelId }}</button>
-                    </form>
-
+                    <button type="button" id="dialogue-continue" class="btn btn-primary">Continue ➡️</button>
                 </div>
             </div>
         </div>
@@ -88,8 +84,9 @@
             "alex": "{{ asset('images/alex.png') }}"
         };
 
-        // Dialogue sequence (Nila left, Ravi right, etc.)
-        const dialogues = [{
+        // Dialogue sequence
+        const dialogues = [
+            {
                 speaker: "nila",
                 side: "left",
                 text: "🌴 Welcome, Alex! This is Sri Lanka — full of adventures and hidden treasures."
@@ -152,6 +149,7 @@
             if (index < dialogues.length) {
                 showDialogue(dialogues[index]);
             } else {
+                // ✅ redirect directly to the level page after last dialogue
                 dialogueModal.hide();
                 window.location.href = "/sql-game/{{ $levelId }}";
             }
