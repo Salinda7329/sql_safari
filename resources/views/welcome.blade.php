@@ -382,21 +382,23 @@
     </section>
 
     <!-- Character Intro: Ravi -->
-    <section class="character-intro" data-aos="fade-up" data-aos-delay="200" style="background-color: #e35108">
+    <section id="meet-ravi" class="character-intro" data-aos="fade-up" data-aos-delay="200"
+        style="background-color: #e35108">
         <img src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character-img">
         <h2>Meet Ravi</h2>
         <p>Your witty local driver 🚖, always ready with humor, cultural stories, and hints when SQL gets tricky.</p>
     </section>
 
     <!-- Character Intro: Nila -->
-    <section class="character-intro" data-aos="fade-up" data-aos-delay="400" style="background-color: #2c0ba1">
+    <section id="meet-nila" class="character-intro" data-aos="fade-up" data-aos-delay="400"
+        style="background-color: #2c0ba1">
         <img src="{{ asset('images/nila.png') }}" alt="Nila" class="character-img">
         <h2>Meet Nila</h2>
         <p>A tech-savvy cousin and your SQL mentor 💻. Nila introduces you to the SQL Terminal.</p>
     </section>
 
     <!-- Character Intro: Professor -->
-    <section class="character-intro" data-aos="fade-up" data-aos-delay="600">
+    <section id="meet-professor" class="character-intro" data-aos="fade-up" data-aos-delay="600">
         <img src="{{ asset('images/professor.png') }}" alt="Professor" class="character-img">
         <h2>Professor Senanayake</h2>
         <p>The legendary data scientist 👨‍🏫 awaiting in the final level with the ultimate SQL challenge.</p>
@@ -450,7 +452,7 @@
         <button class="btn-start" onclick="startAdventure()">🌟 Start Your Journey 🌟</button>
     </section>
 
-    <a href="#alex-intro" class="scroll-indicator" id="scrollIndicator">Click to Begin ⬇️</a>
+    <a class="scroll-indicator" id="scrollIndicator">Click The Background To Begin</a>
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -476,35 +478,84 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const hero = document.querySelector(".hero"); // first section
+        // Lock scroll until intros are done
+        document.body.style.overflow = "hidden";
+
+        // 🎵 Audio constants
         const welcomeAudio = new Audio("{{ asset('audio/welcome_voice.mp3') }}");
-        const joinAudio = new Audio("{{ asset('audio/join_alex.mp3') }}");
+        const joinAlexAudio = new Audio("{{ asset('audio/join_alex.mp3') }}");
+        const meetRaviAudio = new Audio("{{ asset('audio/meet_ravi.mp3') }}");
+        const meetNilaAudio = new Audio("{{ asset('audio/meet_nila.mp3') }}");
+        const meetProfAudio = new Audio("{{ asset('audio/meet_professor.mp3') }}");
 
-        // Play welcome audio once on first hover over hero section
-        if (!localStorage.getItem("welcome_voice_played")) {
-            const playWelcomeOnHover = () => {
-                welcomeAudio.play().then(() => {
-                    localStorage.setItem("welcome_voice_played", "true");
-                }).catch(err => console.warn("Unable to play welcome voice:", err));
+        // Section constants
+        const heroSection = document.querySelector(".hero");
+        const alexSection = document.getElementById("alex-intro");
+        const raviSection = document.getElementById("meet-ravi");
+        const nilaSection = document.getElementById("meet-nila");
+        const profSection = document.getElementById("meet-professor");
 
-                // Remove listener so it only fires once
-                hero.removeEventListener("click", playWelcomeOnHover);
-            };
+        // Helper: play audio + scroll to section + return Promise
+        function playSectionAudio(audio, section, storageKey) {
+            return new Promise((resolve, reject) => {
+                if (localStorage.getItem(storageKey)) {
+                    resolve(); // already played
+                    return;
+                }
 
-            hero.addEventListener("click", playWelcomeOnHover);
+                section.scrollIntoView({
+                    behavior: "smooth"
+                });
 
-            // After welcome ends, play join audio once
-            welcomeAudio.addEventListener("ended", () => {
-                joinAudio.currentTime = 0;
-                joinAudio.play().catch(err => console.warn("Unable to play join audio:", err));
+                // Delay scroll → then play audio
+                setTimeout(() => {
+                    audio.currentTime = 0;
+                    audio.play().then(() => {
+                        localStorage.setItem(storageKey, "true");
+                    }).catch(err => console.warn("Playback failed:", err));
+                }, 1000);
+
+                audio.addEventListener("ended", () => resolve(), {
+                    once: true
+                });
             });
         }
 
-        // Reset flag when tab/window is closed
+        // Sequence controller
+        async function startSequence() {
+            try {
+                await playSectionAudio(welcomeAudio, heroSection, "welcome_voice_played");
+                await playSectionAudio(joinAlexAudio, alexSection, "alex-intro_played");
+                await playSectionAudio(meetRaviAudio, raviSection, "meet-ravi_played");
+                await playSectionAudio(meetNilaAudio, nilaSection, "meet-nila_played");
+                await playSectionAudio(meetProfAudio, profSection, "meet-professor_played");
+
+                // ✅ After professor → unlock scroll
+                document.body.style.overflow = "auto";
+            } catch (err) {
+                console.error("Sequence error:", err);
+            }
+        }
+
+        // Start when user clicks background/hero once
+        if (!localStorage.getItem("welcome_voice_played")) {
+            heroSection.addEventListener("click", () => {
+                startSequence();
+            }, {
+                once: true
+            });
+        } else {
+            // If already played before → just unlock
+            document.body.style.overflow = "auto";
+        }
+
+        // 🧹 Reset when leaving
         window.addEventListener("beforeunload", () => {
-            localStorage.removeItem("welcome_voice_played");
+            localStorage.clear();
         });
     });
 </script>
+
+
 
 </html>
