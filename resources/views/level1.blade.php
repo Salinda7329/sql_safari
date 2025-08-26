@@ -332,6 +332,9 @@
                                             }
                                         ]);
                                     } else {
+                                        // Hide the default continue button
+                                        document.getElementById("dialogue-continue").style.display =
+                                            "none";
                                         showDialogueChain([{
                                             speaker: "nila",
                                             text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
