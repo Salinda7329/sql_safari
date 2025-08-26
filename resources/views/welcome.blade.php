@@ -476,53 +476,35 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        const hero = document.querySelector(".hero"); // first section
+        const welcomeAudio = new Audio("{{ asset('audio/welcome_voice.mp3') }}");
+        const joinAudio = new Audio("{{ asset('audio/join_alex.mp3') }}");
 
-        const scrollIndicator = document.getElementById("scrollIndicator");
-
-        scrollIndicator.addEventListener("click", () => {
-            // Scroll smoothly to the first character intro section
-            document.querySelector(".character-intro")?.scrollIntoView({
-                behavior: "smooth"
-            });
-
-            // Optional: hide the arrow after clicking
-            scrollIndicator.style.display = "none";
-        });
-
+        // Play welcome audio once on first hover over hero section
         if (!localStorage.getItem("welcome_voice_played")) {
-            const audio = new Audio("{{ asset('audio/welcome_voice.mp3') }}");
-
-            function playWelcomeVoice() {
-                audio.play().then(() => {
+            const playWelcomeOnHover = () => {
+                welcomeAudio.play().then(() => {
                     localStorage.setItem("welcome_voice_played", "true");
-                    // Remove listeners after first successful play
-                    document.removeEventListener("click", playWelcomeVoice);
-                    document.removeEventListener("keydown", playWelcomeVoice);
-                    document.removeEventListener("scroll", playWelcomeVoice);
-                }).catch(err => {
-                    console.warn("Unable to play audio:", err);
-                });
-            }
+                }).catch(err => console.warn("Unable to play welcome voice:", err));
 
-            // Play once after first user interaction (scroll, click, or keypress)
-            document.addEventListener("click", playWelcomeVoice, {
-                once: true
-            });
-            document.addEventListener("keydown", playWelcomeVoice, {
-                once: true
-            });
-            document.addEventListener("scroll", playWelcomeVoice, {
-                once: true
+                // Remove listener so it only fires once
+                hero.removeEventListener("click", playWelcomeOnHover);
+            };
+
+            hero.addEventListener("click", playWelcomeOnHover);
+
+            // After welcome ends, play join audio once
+            welcomeAudio.addEventListener("ended", () => {
+                joinAudio.currentTime = 0;
+                joinAudio.play().catch(err => console.warn("Unable to play join audio:", err));
             });
         }
 
-        // Clear flag when tab/window is closed
+        // Reset flag when tab/window is closed
         window.addEventListener("beforeunload", () => {
             localStorage.removeItem("welcome_voice_played");
         });
     });
 </script>
-
-
 
 </html>
