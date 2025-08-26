@@ -34,7 +34,6 @@
             <p>{{ $task->task }}</p>
             <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
             <button id="run-btn" class="btn btn-primary">Run Query</button>
-            <div id="result" class="result-box mt-3"></div>
         </div>
 
     </div>
@@ -67,6 +66,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Result Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">📊 Query Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="result-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 
@@ -253,10 +268,9 @@
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
 
-                    // 🔹 Prepare result box
-                    const resultBox = document.getElementById("result");
-                    resultBox.classList.remove("d-none");
-                    resultBox.innerHTML = "";
+                    // 🔹 Prepare result modal
+                    const resultContent = document.getElementById("result-content");
+                    resultContent.innerHTML = "";
 
                     // 🔹 Render raw DB result or error
                     if (data.result && data.result.length > 0) {
@@ -273,58 +287,71 @@
                             table += "</tr>";
                         });
                         table += "</tbody></table>";
-                        resultBox.innerHTML = table;
+                        resultContent.innerHTML = table;
                     } else if (data.success) {
-                        resultBox.innerHTML =
-                            "<p class='text-success'>✅ Query executed successfully. No rows returned.</p>";
+                        resultContent.innerHTML =
+                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
                     } else {
-                        resultBox.innerHTML =
+                        resultContent.innerHTML =
                             `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
                     }
 
-                    // 🔹 Game logic after showing results
-                    if (data.success) {
-                        // also load reference tables with rows
-                        loadReferenceTables({{ $task->id }}, true, data.result);
+                    // 🔹 Show modal
+                    const resultModal = new bootstrap.Modal(document.getElementById("resultModal"), {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    resultModal.show();
 
-                        // ⏳ wait 3 seconds before showing success dialogues
-                        setTimeout(() => {
-                            if ({{ $task->id }} == 3) {
-                                showDialogueChain([{
-                                        speaker: "alex",
-                                        text: "I'll stay in Colombo Grand Hotel"
-                                    },
-                                    {
-                                        speaker: "nila",
-                                        text: "Okay, let’s check in to the hotel"
-                                    },
-                                    {
-                                        speaker: "professor",
-                                        text: `You have mastered the basics! Now it's time to earn your first badge.
+                    // 🔹 When modal is closed → trigger game logic
+                    document.getElementById("resultModal").addEventListener("hidden.bs.modal",
+                        function onClose() {
+                            this.removeEventListener("hidden.bs.modal", onClose);
+
+                            // 🔹 Game logic after showing results
+                            if (data.success) {
+                                // also load reference tables with rows
+                                loadReferenceTables({{ $task->id }}, true, data.result);
+
+                                // ⏳ wait 3 seconds before showing success dialogues
+                                setTimeout(() => {
+                                    if ({{ $task->id }} == 3) {
+                                        showDialogueChain([{
+                                                speaker: "alex",
+                                                text: "I'll stay in Colombo Grand Hotel"
+                                            },
+                                            {
+                                                speaker: "nila",
+                                                text: "Okay, let’s check in to the hotel"
+                                            },
+                                            {
+                                                speaker: "professor",
+                                                text: `You have mastered the basics! Now it's time to earn your first badge.
                                <br><br>
                                <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`
+                                            }
+                                        ]);
+                                    } else {
+                                        showDialogueChain([{
+                                            speaker: "nila",
+                                            text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
+                                        }]);
                                     }
-                                ]);
+                                }, 3000); // delay
                             } else {
-                                showDialogueChain([{
-                                    speaker: "nila",
-                                    text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
-                                }]);
+                                // ❌ Incorrect query logic
+                                if (data.attempts_left > 0) {
+                                    showDialogueChain([{
+                                        speaker: "ravi",
+                                        text: data.clue ? "💡 " + data.clue : data.message
+                                    }]);
+                                } else {
+                                    showHelpModal(@json($task->help));
+                                }
                             }
-                        }, 3000); // delay
-                    } else {
-                        // ❌ Incorrect query logic
-                        if (data.attempts_left > 0) {
-                            showDialogueChain([{
-                                speaker: "ravi",
-                                text: data.clue ? "💡 " + data.clue : data.message
-                            }]);
-                        } else {
-                            showHelpModal(@json($task->help));
-                        }
-                    }
-                });
+                        });
 
+                });
         });
 
         function awardBadge(id) {
