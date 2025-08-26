@@ -115,7 +115,7 @@
         }
 
         .final-section {
-            background: linear-gradient(135deg, rgba(255, 102, 0, 0.9),rgba(76, 162, 205, 0.9), rgba(255, 204, 0, 0.9));
+            background: linear-gradient(135deg, rgba(255, 102, 0, 0.9), rgba(76, 162, 205, 0.9), rgba(255, 204, 0, 0.9));
             color: white;
             clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
         }
@@ -313,6 +313,33 @@
             animation: floaty 4s ease-in-out infinite;
         }
 
+        .scroll-arrow {
+            margin-top: 40px;
+            font-size: 1.5rem;
+            color: #fff;
+            /* White text so it’s visible on hero background */
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            font-weight: bold;
+        }
+
+        .scroll-indicator {
+            text-decoration: none;
+            /* remove underline */
+            color: white;
+            /* keep text white */
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-indicator:hover {
+            color: #ffcc00;
+            /* optional: highlight on hover */
+        }
+
+
         @keyframes floaty {
 
             0%,
@@ -342,11 +369,13 @@
         <h1 class="glow">🌴 Welcome to SQL Safari: Sri Lanka! 🌴</h1>
         <p data-aos="fade-up">A gamified adventure where you travel across Sri Lanka with Alex, Ravi, and Nila while
             mastering SQL step by step.</p>
+
     </section>
+
 
     {{-- Character intro --}}
     <!-- Character Intro: Alex -->
-    <section class="character-intro" data-aos="fade-up" style="background-color: #03361d">
+    <section id="alex-intro" class="character-intro" data-aos="fade-up" style="background-color: #03361d">
         <img src="{{ asset('images/alex.png') }}" alt="Alex" class="character-img">
         <h2>Meet Alex</h2>
         <p>A curious traveler from Europe 🌍. Alex is eager to explore Sri Lanka and learn SQL on the way.</p>
@@ -421,7 +450,7 @@
         <button class="btn-start" onclick="startAdventure()">🌟 Start Your Journey 🌟</button>
     </section>
 
-    <div class="scroll-indicator" id="scrollIndicator">⬇️</div>
+    <a href="#alex-intro" class="scroll-indicator" id="scrollIndicator">Click to Begin ⬇️</a>
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -445,5 +474,55 @@
         }
     </script>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const scrollIndicator = document.getElementById("scrollIndicator");
+
+        scrollIndicator.addEventListener("click", () => {
+            // Scroll smoothly to the first character intro section
+            document.querySelector(".character-intro")?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+            // Optional: hide the arrow after clicking
+            scrollIndicator.style.display = "none";
+        });
+
+        if (!localStorage.getItem("welcome_voice_played")) {
+            const audio = new Audio("{{ asset('audio/welcome_voice.mp3') }}");
+
+            function playWelcomeVoice() {
+                audio.play().then(() => {
+                    localStorage.setItem("welcome_voice_played", "true");
+                    // Remove listeners after first successful play
+                    document.removeEventListener("click", playWelcomeVoice);
+                    document.removeEventListener("keydown", playWelcomeVoice);
+                    document.removeEventListener("scroll", playWelcomeVoice);
+                }).catch(err => {
+                    console.warn("Unable to play audio:", err);
+                });
+            }
+
+            // Play once after first user interaction (scroll, click, or keypress)
+            document.addEventListener("click", playWelcomeVoice, {
+                once: true
+            });
+            document.addEventListener("keydown", playWelcomeVoice, {
+                once: true
+            });
+            document.addEventListener("scroll", playWelcomeVoice, {
+                once: true
+            });
+        }
+
+        // Clear flag when tab/window is closed
+        window.addEventListener("beforeunload", () => {
+            localStorage.removeItem("welcome_voice_played");
+        });
+    });
+</script>
+
+
 
 </html>
