@@ -4,17 +4,32 @@
 
 @section('content')
     <div class="level-screen">
-        <div class="city-banner">
-            <h2>🌴 Colombo, Sri Lanka</h2>
+        <div class="city-banner row">
+            <div class="col-10">
+                <h2>🌴 Colombo, Sri Lanka</h2>
+            </div>
+            <div class="col">
+                Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+            </div>
         </div>
 
-        <div class="character-section">
-            <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
-            <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
-            <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
+        <div class="row" style="height:200px">
+            <div class="col-2" style="height:50%">
+                <div class="character-section">
+                    <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
+                    <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
+                </div>
+            </div>
+            <div class="col-8" style="height:50%">
+                <div id="reference-tables" class="mt-4 d-none"></div>
+            </div>
+            <div class="col-2" style="height:50%">
+                <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
+            </div>
         </div>
 
-        <div class="task-box d-none" id="task-text-box">
+
+        <div class="task-box d-none" id="task-text-box" style="height: 80%">
             <h3>📝 Task</h3>
             <p>{{ $task->task }}</p>
             <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
@@ -22,11 +37,6 @@
             <div id="result" class="result-box mt-3"></div>
         </div>
 
-        <div id="reference-tables" class="mt-4 d-none"></div>
-
-        <div class="attempts-box mt-3">
-            Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
-        </div>
     </div>
 
     <!-- Character messages Bootstrap Modal -->
@@ -238,16 +248,47 @@
                 })
                 .then(res => res.json())
                 .then(data => {
+                    // 🔹 Update attempts counter
                     if (data.attempts_left !== undefined) {
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
 
+                    // 🔹 Prepare result box
+                    const resultBox = document.getElementById("result");
+                    resultBox.classList.remove("d-none");
+                    resultBox.innerHTML = "";
+
+                    // 🔹 Render raw DB result or error
+                    if (data.result && data.result.length > 0) {
+                        let table = "<table class='table table-bordered table-sm'><thead><tr>";
+                        Object.keys(data.result[0]).forEach(col => {
+                            table += `<th>${col}</th>`;
+                        });
+                        table += "</tr></thead><tbody>";
+                        data.result.forEach(row => {
+                            table += "<tr>";
+                            Object.values(row).forEach(val => {
+                                table += `<td>${val}</td>`;
+                            });
+                            table += "</tr>";
+                        });
+                        table += "</tbody></table>";
+                        resultBox.innerHTML = table;
+                    } else if (data.success) {
+                        resultBox.innerHTML =
+                            "<p class='text-success'>✅ Query executed successfully. No rows returned.</p>";
+                    } else {
+                        resultBox.innerHTML =
+                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
+                    }
+
+                    // 🔹 Game logic after showing results
                     if (data.success) {
+                        // also load reference tables with rows
                         loadReferenceTables({{ $task->id }}, true, data.result);
 
                         // ⏳ wait 3 seconds before showing success dialogues
                         setTimeout(() => {
-                            // ✅ Success dialogues
                             if ({{ $task->id }} == 3) {
                                 showDialogueChain([{
                                         speaker: "alex",
@@ -260,20 +301,19 @@
                                     {
                                         speaker: "professor",
                                         text: `You have mastered the basics! Now it's time to earn your first badge.
-                   <br><br>
-                   <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`
-                                    },
+                               <br><br>
+                               <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`
+                                    }
                                 ]);
                             } else {
-                                // 🔹 Normal task success → show Next Task button
                                 showDialogueChain([{
                                     speaker: "nila",
                                     text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
                                 }]);
                             }
-                        }, 3000); // delay in milliseconds
+                        }, 3000); // delay
                     } else {
-                        // ❌ Incorrect query
+                        // ❌ Incorrect query logic
                         if (data.attempts_left > 0) {
                             showDialogueChain([{
                                 speaker: "ravi",
@@ -284,6 +324,7 @@
                         }
                     }
                 });
+
         });
 
         function awardBadge(id) {

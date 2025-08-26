@@ -17,7 +17,7 @@ class SqlGameController extends Controller
             abort(404);
         }
 
-        return view('introductions.section_'.$level, ['levelId' => $level]);
+        return view('introductions.section_' . $level, ['levelId' => $level]);
     }
 
     public function showLevel($level)
@@ -128,6 +128,95 @@ class SqlGameController extends Controller
         ]);
     }
 
+    // public function runQuery(Request $request, $level)
+    // {
+    //     $playerId = 1; // demo
+    //     $taskId = $request->input('task_id');
+    //     $userQuery = $request->input('query');
+
+    //     $task = DB::table('level_tasks')->where('id', $taskId)->first();
+    //     if (!$task) {
+    //         return response()->json(['success' => false, 'message' => 'Task not found']);
+    //     }
+
+    //     $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
+
+    //     try {
+    //         $userResult = DB::select($userQuery);
+    //         $expectedResult = DB::select($task->expected_query);
+
+    //         if ($userResult == $expectedResult) {
+    //             // ✅ Correct answer
+    //             $nextTask = DB::table('level_tasks')
+    //                 ->where('id', '>', $task->id)
+    //                 ->orderBy('id')
+    //                 ->first();
+
+    //             if ($nextTask) {
+    //                 DB::table('player_progress')
+    //                     ->where('player_id', $playerId)
+    //                     ->update([
+    //                         'attempts_left'   => 3,
+    //                         'current_task_id' => $nextTask->id,
+    //                         'current_level'   => $nextTask->level_id,
+    //                         'highest_level'   => max($progress->highest_level, $nextTask->level_id)
+    //                     ]);
+
+    //                 return response()->json([
+    //                     'success'      => true,
+    //                     'message'      => "🎉 Task complete! Moving to Level " . $nextTask->level_id,
+    //                     'result'       => $userResult,
+    //                     'attempts_left' => 3,
+    //                     'next_level'   => $nextTask->level_id
+    //                 ]);
+    //             } else {
+    //                 // 🎉 Game complete
+    //                 DB::table('player_progress')
+    //                     ->where('player_id', $playerId)
+    //                     ->update([
+    //                         'attempts_left'   => 3,
+    //                         'current_task_id' => null
+    //                     ]);
+
+    //                 return response()->json([
+    //                     'success'      => true,
+    //                     'message'      => "🏆 Congratulations! You finished all levels.",
+    //                     'result'       => $userResult,
+    //                     'attempts_left' => 3
+    //                 ]);
+    //             }
+    //         } else {
+    //             // ❌ Wrong query but valid SQL
+    //             $remainingAttempts = max(0, $progress->attempts_left - 1);
+
+    //             DB::table('player_progress')->where('player_id', $playerId)
+    //                 ->update(['attempts_left' => $remainingAttempts]);
+
+    //             return response()->json([
+    //                 'success'       => false,
+    //                 'message'       => "❌ Wrong answer.",
+    //                 'attempts_left' => $remainingAttempts,
+    //                 'clue'          => $remainingAttempts > 0 ? $task->clue : null,
+    //                 'help'          => $remainingAttempts == 0 ? $task->help : null
+    //             ]);
+    //         }
+    //     } catch (\Exception $e) {
+    //         // ⚠ SQL or runtime error
+    //         $remainingAttempts = max(0, $progress->attempts_left - 1);
+
+    //         DB::table('player_progress')->where('player_id', $playerId)
+    //             ->update(['attempts_left' => $remainingAttempts]);
+
+    //         return response()->json([
+    //             'success'       => false,
+    //             'message'       => "⚠ Error: " . $e->getMessage(),
+    //             'attempts_left' => $remainingAttempts,
+    //             'clue'          => $remainingAttempts > 0 ? $task->clue : null,
+    //             'help'          => $remainingAttempts == 0 ? $task->help : null
+    //         ]);
+    //     }
+    // }
+
     public function runQuery(Request $request, $level)
     {
         $playerId = 1; // demo
@@ -136,17 +225,21 @@ class SqlGameController extends Controller
 
         $task = DB::table('level_tasks')->where('id', $taskId)->first();
         if (!$task) {
-            return response()->json(['success' => false, 'message' => 'Task not found']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Task not found'
+            ]);
         }
 
         $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
 
         try {
+            // 🔹 Run player's query and task's expected query
             $userResult = DB::select($userQuery);
             $expectedResult = DB::select($task->expected_query);
 
+            // ✅ If both results match → task complete
             if ($userResult == $expectedResult) {
-                // ✅ Correct answer
                 $nextTask = DB::table('level_tasks')
                     ->where('id', '>', $task->id)
                     ->orderBy('id')
@@ -163,14 +256,14 @@ class SqlGameController extends Controller
                         ]);
 
                     return response()->json([
-                        'success'      => true,
-                        'message'      => "🎉 Task complete! Moving to Level " . $nextTask->level_id,
-                        'result'       => $userResult,
+                        'success'       => true,
+                        'message'       => "🎉 Task complete! Moving to Level " . $nextTask->level_id,
+                        'result'        => $userResult, // 🔹 Always return result
                         'attempts_left' => 3,
-                        'next_level'   => $nextTask->level_id
+                        'next_level'    => $nextTask->level_id
                     ]);
                 } else {
-                    // 🎉 Game complete
+                    // 🎉 All levels complete
                     DB::table('player_progress')
                         ->where('player_id', $playerId)
                         ->update([
@@ -179,25 +272,26 @@ class SqlGameController extends Controller
                         ]);
 
                     return response()->json([
-                        'success'      => true,
-                        'message'      => "🏆 Congratulations! You finished all levels.",
-                        'result'       => $userResult,
+                        'success'       => true,
+                        'message'       => "🏆 Congratulations! You finished all levels.",
+                        'result'        => $userResult, // 🔹 Return final result
                         'attempts_left' => 3
                     ]);
                 }
             } else {
-                // ❌ Wrong query but valid SQL
+                // ❌ Wrong answer but SQL valid
                 $remainingAttempts = max(0, $progress->attempts_left - 1);
 
                 DB::table('player_progress')->where('player_id', $playerId)
                     ->update(['attempts_left' => $remainingAttempts]);
 
                 return response()->json([
-                    'success'       => false,
-                    'message'       => "❌ Wrong answer.",
-                    'attempts_left' => $remainingAttempts,
-                    'clue'          => $remainingAttempts > 0 ? $task->clue : null,
-                    'help'          => $remainingAttempts == 0 ? $task->help : null
+                    'success'        => false,
+                    'message'        => "❌ Wrong answer.",
+                    'result'         => $userResult, // 🔹 Still return what the DB produced
+                    'attempts_left'  => $remainingAttempts,
+                    'clue'           => $remainingAttempts > 0 ? $task->clue : null,
+                    'help'           => $remainingAttempts == 0 ? $task->help : null
                 ]);
             }
         } catch (\Exception $e) {
@@ -208,14 +302,16 @@ class SqlGameController extends Controller
                 ->update(['attempts_left' => $remainingAttempts]);
 
             return response()->json([
-                'success'       => false,
-                'message'       => "⚠ Error: " . $e->getMessage(),
-                'attempts_left' => $remainingAttempts,
-                'clue'          => $remainingAttempts > 0 ? $task->clue : null,
-                'help'          => $remainingAttempts == 0 ? $task->help : null
+                'success'        => false,
+                'message'        => "⚠ Error: " . $e->getMessage(),
+                'result'         => null, // 🔹 No result because it errored
+                'attempts_left'  => $remainingAttempts,
+                'clue'           => $remainingAttempts > 0 ? $task->clue : null,
+                'help'           => $remainingAttempts == 0 ? $task->help : null
             ]);
         }
     }
+
 
 
     public function schema($level)
