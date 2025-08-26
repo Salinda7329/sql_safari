@@ -331,7 +331,9 @@
                        <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`,
                                                 action: () => {
                                                     // 👇 hide continue when this dialogue is shown
-                                                    document.getElementById("dialogue-continue").style.display = "none";
+                                                    document.getElementById(
+                                                            "dialogue-continue").style
+                                                        .display = "none";
                                                 }
                                             }
                                         ]);
@@ -375,15 +377,31 @@
                     return res.json();
                 })
                 .then((data) => {
-                    alert(data.message || 'Badge awarded!');
-                    window.location.href = data.redirect || '/achievements';
+                    // ✅ Update the dialogue modal content
+                    document.getElementById("dialogue-character").src = "{{ asset('images/professor.png') }}";
+                    document.getElementById("dialogue-text").innerHTML = `
+            🎉 ${data.message || 'Badge awarded!'} <br><br>
+            <button class="btn btn-primary" onclick="window.location.href='${data.redirect || '/achievements'}'">
+                Go to Achievements
+            </button>
+        `;
+
+                    // Hide the continue button
+                    document.getElementById("dialogue-continue").style.display = "none";
+
+                    // Show the modal
+                    dialogueModal.show();
                 })
                 .catch((err) => {
                     console.error(err);
-                    alert('Failed to award badge. Check console/logs.');
+
+                    document.getElementById("dialogue-character").src = "{{ asset('images/professor.png') }}";
+                    document.getElementById("dialogue-text").innerHTML = `❌ Failed to award badge. Please try again.`;
+                    document.getElementById("dialogue-continue").style.display = "none";
+
+                    dialogueModal.show();
                 });
         }
-
 
 
         document.addEventListener("DOMContentLoaded", () => {
