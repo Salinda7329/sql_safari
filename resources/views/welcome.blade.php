@@ -115,7 +115,7 @@
         }
 
         .final-section {
-            background: linear-gradient(135deg, rgba(255, 102, 0, 0.9), rgba(255, 204, 0, 0.9));
+            background: linear-gradient(135deg, rgba(255, 102, 0, 0.9),rgba(76, 162, 205, 0.9), rgba(255, 204, 0, 0.9));
             color: white;
             clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
         }
@@ -346,21 +346,21 @@
 
     {{-- Character intro --}}
     <!-- Character Intro: Alex -->
-    <section class="character-intro" data-aos="fade-up">
+    <section class="character-intro" data-aos="fade-up" style="background-color: #03361d">
         <img src="{{ asset('images/alex.png') }}" alt="Alex" class="character-img">
         <h2>Meet Alex</h2>
         <p>A curious traveler from Europe 🌍. Alex is eager to explore Sri Lanka and learn SQL on the way.</p>
     </section>
 
     <!-- Character Intro: Ravi -->
-    <section class="character-intro" data-aos="fade-up" data-aos-delay="200">
+    <section class="character-intro" data-aos="fade-up" data-aos-delay="200" style="background-color: #e35108">
         <img src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character-img">
         <h2>Meet Ravi</h2>
         <p>Your witty local driver 🚖, always ready with humor, cultural stories, and hints when SQL gets tricky.</p>
     </section>
 
     <!-- Character Intro: Nila -->
-    <section class="character-intro" data-aos="fade-up" data-aos-delay="400">
+    <section class="character-intro" data-aos="fade-up" data-aos-delay="400" style="background-color: #2c0ba1">
         <img src="{{ asset('images/nila.png') }}" alt="Nila" class="character-img">
         <h2>Meet Nila</h2>
         <p>A tech-savvy cousin and your SQL mentor 💻. Nila introduces you to the SQL Terminal.</p>
