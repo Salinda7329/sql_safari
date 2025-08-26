@@ -327,8 +327,12 @@
                                             {
                                                 speaker: "professor",
                                                 text: `You have mastered the basics! Now it's time to earn your first badge.
-                               <br><br>
-                               <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`
+                       <br><br>
+                       <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`,
+                                                action: () => {
+                                                    // 👇 hide continue when this dialogue is shown
+                                                    document.getElementById("dialogue-continue").style.display = "none";
+                                                }
                                             }
                                         ]);
                                     } else {
