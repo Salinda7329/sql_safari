@@ -5,28 +5,34 @@
 
 @section('content')
     <div class="level-screen">
-        <div class="city-banner">
-            <h2>Kandy, Sri Lanka</h2>
+        <div class="city-banner row">
+            <div class="col-10">
+                <h2>🏯 Kandy, Sri Lanka</h2>
+            </div>
+            <div class="col">
+                Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+            </div>
         </div>
 
-        <div class="character-section">
-            <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
-            <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
-            <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
-        </div>
-
-        <div class="task-box d-none" id="task-text-box">
-            <h3>Task</h3>
-            <p>{{ $task->task }}</p>
-            <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
-            <button id="run-btn" class="btn btn-primary">Run Query</button>
-            <div id="result" class="result-box mt-3"></div>
-        </div>
-
-        <div id="reference-tables" class="mt-4 d-none"></div>
-
-        <div class="attempts-box mt-3">
-            Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+        <div class="row">
+            <div class="col-2">
+                <div class="character-section">
+                    <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
+                    <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
+                </div>
+            </div>
+            <div class="col-8">
+                <div id="reference-tables" class="mt-4 d-none"></div>
+                <div class="task-box d-none" id="task-text-box">
+                    <h3>📝 Task</h3>
+                    <p>{{ $task->task }}</p>
+                    <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
+                    <button id="run-btn" class="btn btn-primary">Run Query</button>
+                </div>
+            </div>
+            <div class="col-2">
+                <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
+            </div>
         </div>
     </div>
 
@@ -49,11 +55,26 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-light text-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title">Help Guide</h5>
+                    <h5 class="modal-title">📖 Help Guide</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="help-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal (same as Level 1) -->
+    <div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">📊 Query Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="result-content"></div>
                 </div>
             </div>
         </div>
@@ -113,7 +134,7 @@
 
         function setDialogue(speaker, message) {
             document.getElementById("dialogue-character").src = images[speaker] || "";
-            document.getElementById("dialogue-text").innerHTML = message; // allow HTML for buttons
+            document.getElementById("dialogue-text").innerHTML = message;
         }
 
         function showDialogueChain(dialogues, onComplete) {
@@ -121,18 +142,16 @@
 
             function renderDialogue() {
                 setDialogue(dialogues[index].speaker, dialogues[index].text);
-                if (typeof dialogues[index].action === "function") {
-                    dialogues[index].action();
-                }
+                if (typeof dialogues[index].action === "function") dialogues[index].action();
             }
             renderDialogue();
             dialogueModal.show();
             const btn = document.getElementById("dialogue-continue");
+            btn.style.display = "inline-block";
             btn.onclick = () => {
                 index++;
-                if (index < dialogues.length) {
-                    renderDialogue();
-                } else {
+                if (index < dialogues.length) renderDialogue();
+                else {
                     dialogueModal.hide();
                     if (onComplete) onComplete();
                 }
@@ -145,25 +164,15 @@
                 .then(data => {
                     const container = document.getElementById("reference-tables");
                     container.innerHTML = "";
-
                     if (data.error) {
                         container.innerHTML = `<p class="text-danger">${data.error}</p>`;
                         return;
                     }
-
                     for (const [table, info] of Object.entries(data)) {
-                        if (info.error) {
-                            container.innerHTML += `<p class="text-danger">${info.error}</p>`;
-                            continue;
-                        }
-
-                        let html = `<h5 class="mt-3">${table}</h5>`;
+                        let html = `<h5 class="mt-3">📊 ${table}</h5>`;
                         html += "<table class='table table-bordered table-sm'><thead><tr>";
-                        info.columns.forEach(col => {
-                            html += `<th>${col}</th>`;
-                        });
+                        info.columns.forEach(col => html += `<th>${col}</th>`);
                         html += "</tr></thead><tbody>";
-
                         if (showRows && rows.length > 0) {
                             rows.forEach(row => {
                                 html += "<tr>";
@@ -173,7 +182,6 @@
                                 html += "</tr>";
                             });
                         }
-
                         html += "</tbody></table>";
                         container.innerHTML += html;
                     }
@@ -194,7 +202,6 @@
             helpModal.show();
         }
 
-        // On page load: dialogue chain for Level 2 using DB fields (ids 4..7)
         document.addEventListener("DOMContentLoaded", () => {
             showDialogueChain([{
                     speaker: "nila",
@@ -216,10 +223,9 @@
             });
         });
 
-        // Run query
+        // ✅ Run query logic (same as Level 1)
         document.getElementById('run-btn').addEventListener('click', function() {
             let query = document.getElementById('query-box').value;
-
             fetch(`/sql-game/{{ $level->id }}/run`, {
                     method: 'POST',
                     headers: {
@@ -237,41 +243,78 @@
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
 
-                    if (data.success) {
-                        loadReferenceTables({{ $task->id }}, true, data.result);
-
-                        // Delay before success dialogues
-                        setTimeout(() => {
-                            // If this is the final task of Level 2 (id 7), award badge 2
-                            if ({{ $task->id }} === 7) {
-                                showDialogueChain([{
-                                        speaker: "alex",
-                                        text: "Completed all Level 2 tasks."
-                                    },
-                                    {
-                                        speaker: "professor",
-                                        text: "You earned the Level 2 badge.<br><br><button class='btn btn-success' onclick=\"awardBadge(2)\">Get Badge</button>"
-                                    }
-                                ]);
-                            } else {
-                                // Normal success -> Next Task
-                                showDialogueChain([{
-                                    speaker: "nila",
-                                    text: "Good work. <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task</button>"
-                                }]);
-                            }
-                        }, 1000);
+                    // Fill Result Modal
+                    const resultContent = document.getElementById("result-content");
+                    resultContent.innerHTML = "";
+                    if (data.result && data.result.length > 0) {
+                        let table = "<table class='table table-bordered table-sm'><thead><tr>";
+                        Object.keys(data.result[0]).forEach(col => {
+                            table += `<th>${col}</th>`;
+                        });
+                        table += "</tr></thead><tbody>";
+                        data.result.forEach(row => {
+                            table += "<tr>";
+                            Object.values(row).forEach(val => {
+                                table += `<td>${val}</td>`;
+                            });
+                            table += "</tr>";
+                        });
+                        table += "</tbody></table>";
+                        resultContent.innerHTML = table;
                     } else {
-                        // Incorrect query
-                        if (data.attempts_left > 0) {
-                            showDialogueChain([{
-                                speaker: "ravi",
-                                text: data.clue ? ("Hint: " + data.clue) : data.message
-                            }]);
-                        } else {
-                            showHelpModal(@json($task->help));
-                        }
+                        resultContent.innerHTML =
+                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
                     }
+
+                    // Show Result Modal
+                    const resultModal = new bootstrap.Modal(document.getElementById("resultModal"), {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    resultModal.show();
+
+                    // After Result Modal closed → feedback logic
+                    document.getElementById("resultModal").addEventListener("hidden.bs.modal",
+                    function onClose() {
+                        this.removeEventListener("hidden.bs.modal", onClose);
+
+                        if (data.success) {
+                            loadReferenceTables({{ $task->id }}, true, data.result);
+                            setTimeout(() => {
+                                if ({{ $task->id }} === 7) {
+                                    showDialogueChain([{
+                                            speaker: "alex",
+                                            text: "Completed all Level 2 tasks."
+                                        },
+                                        {
+                                            speaker: "professor",
+                                            text: `🎖️ You earned the Level 2 badge.<br><br>
+                                      <button class='btn btn-success' onclick="awardBadge(2)">Get Badge</button>`,
+                                            action: () => document.getElementById(
+                                                    "dialogue-continue").style.display =
+                                                "none"
+                                        }
+                                    ]);
+                                } else {
+                                    document.getElementById("dialogue-continue").style.display =
+                                        "none";
+                                    showDialogueChain([{
+                                        speaker: "nila",
+                                        text: "✅ Good work. <br><br> <button class = 'btn btn-primary'onclick = \"window.location.reload()\">Next Task ➡️</button>"
+                                    }]);
+                                }
+                            }, 1000);
+                        } else {
+                            if (data.attempts_left > 0) {
+                                showDialogueChain([{
+                                    speaker: "ravi",
+                                    text: data.clue ? "💡 " + data.clue : data.message
+                                }]);
+                            } else {
+                                showHelpModal(@json($task->help));
+                            }
+                        }
+                    });
                 });
         });
 
@@ -289,12 +332,21 @@
                     return res.json();
                 })
                 .then((data) => {
-                    alert(data.message || 'Badge awarded.');
-                    window.location.href = data.redirect || '/achievements';
+                    document.getElementById("dialogue-character").src = images["professor"];
+                    document.getElementById("dialogue-text").innerHTML = `
+                    🎉 ${data.message || 'Badge awarded!'} <br><br>
+                    <button class="btn btn-primary" onclick="window.location.href='${data.redirect || '/achievements'}'">
+                        Go to Achievements
+                    </button>`;
+                    document.getElementById("dialogue-continue").style.display = "none";
+                    dialogueModal.show();
                 })
                 .catch((err) => {
                     console.error(err);
-                    alert('Failed to award badge. Check console/logs.');
+                    document.getElementById("dialogue-character").src = images["professor"];
+                    document.getElementById("dialogue-text").innerHTML = `❌ Failed to award badge. Please try again.`;
+                    document.getElementById("dialogue-continue").style.display = "none";
+                    dialogueModal.show();
                 });
         }
 

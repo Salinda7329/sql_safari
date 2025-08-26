@@ -34,8 +34,6 @@
             </div>
         </div>
 
-
-
     </div>
 
     <!-- Character messages Bootstrap Modal -->
