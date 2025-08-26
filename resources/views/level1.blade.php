@@ -13,28 +13,28 @@
             </div>
         </div>
 
-        <div class="row" style="height:200px">
-            <div class="col-2" style="height:50%">
+        <div class="row">
+            <div class="col-2">
                 <div class="character-section">
                     <img id="nila-img" src="{{ asset('images/nila.png') }}" alt="Nila" class="character nila d-none">
                     <img id="ravi-img" src="{{ asset('images/ravi.png') }}" alt="Ravi" class="character ravi d-none">
                 </div>
             </div>
-            <div class="col-8" style="height:50%">
+            <div class="col-8">
                 <div id="reference-tables" class="mt-4 d-none"></div>
+                <div class="task-box d-none" id="task-text-box">
+                    <h3>📝 Task</h3>
+                    <p>{{ $task->task }}</p>
+                    <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
+                    <button id="run-btn" class="btn btn-primary">Run Query</button>
+                </div>
             </div>
-            <div class="col-2" style="height:50%">
+            <div class="col-2">
                 <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
             </div>
         </div>
 
 
-        <div class="task-box d-none" id="task-text-box" style="height: 80%">
-            <h3>📝 Task</h3>
-            <p>{{ $task->task }}</p>
-            <textarea id="query-box" class="sql-input form-control mb-3" rows="3" placeholder="Write your SQL query here..."></textarea>
-            <button id="run-btn" class="btn btn-primary">Run Query</button>
-        </div>
 
     </div>
 
