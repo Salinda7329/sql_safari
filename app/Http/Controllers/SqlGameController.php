@@ -257,7 +257,7 @@ class SqlGameController extends Controller
 
                     return response()->json([
                         'success'       => true,
-                        'message'       => "🎉 Task complete! Moving to Level " . $nextTask->level_id,
+                        'message'       => "🎉 Task complete! Moving to Task " . $nextTask->level_id,
                         'result'        => $userResult, // 🔹 Always return result
                         'attempts_left' => 3,
                         'next_level'    => $nextTask->level_id

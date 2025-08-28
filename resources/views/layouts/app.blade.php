@@ -34,5 +34,27 @@
 
     @yield('scripts')
 </body>
+<script>
+    const clickSound = new Audio("{{ asset('audio/run-btn-sound.mp3') }}");
+    document.getElementById("run-btn").addEventListener("click", () => {
+        clickSound.currentTime = 0; // restart if clicked repeatedly
+        clickSound.play();
+    });
+
+    const taskWin = new Audio("{{ asset('audio/task-win-sound.mp3') }}");
+
+    function playTaskWinSound() {
+        taskWin.currentTime = 0;
+        taskWin.play();
+    }
+
+    const levelWin = new Audio("{{ asset('audio/level-win-sound.mp3') }}");
+
+    function playLevelWinSound() {
+        levelWin.currentTime = 0;
+        levelWin.play();
+    }
+
+</script>
 
 </html>

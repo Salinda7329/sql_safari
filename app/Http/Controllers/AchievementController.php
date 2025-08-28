@@ -82,7 +82,19 @@ class AchievementController extends Controller
             ], 200);
         }
 
-        return redirect('/achievements')->with('success', '🎉 Badge earned successfully!');
+        // Flash session for the next request (Achievements page)
+        session()->flash('earned_badge', [
+            'id' => $achievementId,
+            // you can add more metadata if needed, e.g. 'name' => $achievement->name
+        ]);
+
+        // Optional: keep backward compatibility with your existing key
+        session()->flash('achievement_earned', true);
+
+        return response()->json([
+            'message'  => 'Badge awarded!',
+            'redirect' => route('achievements'), // matches your Route::get('/achievements', ...)
+        ]);
     }
 
 

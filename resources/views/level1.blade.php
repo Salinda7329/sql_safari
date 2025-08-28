@@ -9,8 +9,11 @@
                 <h2>🌴 Colombo, Sri Lanka</h2>
             </div>
             <div class="col">
-                Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;">
+                    Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+                </span>
             </div>
+
         </div>
 
         <div class="row">
@@ -336,6 +339,7 @@
                                             }
                                         ]);
                                     } else {
+                                        playTaskWinSound();
                                         // Hide the default continue button
                                         document.getElementById("dialogue-continue").style.display =
                                             "none";
@@ -362,6 +366,7 @@
         });
 
         function awardBadge(id) {
+            playLevelWinSound();
             fetch(`/achievements/award/${id}`, {
                     method: 'POST',
                     headers: {

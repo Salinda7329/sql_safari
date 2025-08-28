@@ -10,7 +10,9 @@
                 <h2>🏯 Kandy, Sri Lanka</h2>
             </div>
             <div class="col">
-                Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;">
+                    Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
+                </span>
             </div>
         </div>
 
@@ -145,8 +147,8 @@
                 if (typeof dialogues[index].action === "function") dialogues[index].action();
             }
             renderDialogue();
-            dialogueModal.show();
             const btn = document.getElementById("dialogue-continue");
+            dialogueModal.show();
             btn.style.display = "inline-block";
             btn.onclick = () => {
                 index++;
@@ -275,50 +277,51 @@
 
                     // After Result Modal closed → feedback logic
                     document.getElementById("resultModal").addEventListener("hidden.bs.modal",
-                    function onClose() {
-                        this.removeEventListener("hidden.bs.modal", onClose);
+                        function onClose() {
+                            const btn = document.getElementById("dialogue-continue");
+                            this.removeEventListener("hidden.bs.modal", onClose);
 
-                        if (data.success) {
-                            loadReferenceTables({{ $task->id }}, true, data.result);
-                            setTimeout(() => {
-                                if ({{ $task->id }} === 7) {
-                                    showDialogueChain([{
-                                            speaker: "alex",
-                                            text: "Completed all Level 2 tasks."
-                                        },
-                                        {
-                                            speaker: "professor",
-                                            text: `🎖️ You earned the Level 2 badge.<br><br>
+                            if (data.success) {
+                                loadReferenceTables({{ $task->id }}, true, data.result);
+                                setTimeout(() => {
+                                    if ({{ $task->id }} === 7) {
+                                        showDialogueChain([{
+                                                speaker: "alex",
+                                                text: "Completed all Level 2 tasks."
+                                            },
+                                            {
+                                                speaker: "professor",
+                                                text: `🎖️ You earned the Level 2 badge.<br><br>
                                       <button class='btn btn-success' onclick="awardBadge(2)">Get Badge</button>`,
-                                            action: () => document.getElementById(
-                                                    "dialogue-continue").style.display =
-                                                "none"
-                                        }
-                                    ]);
-                                } else {
-                                    document.getElementById("dialogue-continue").style.display =
-                                        "none";
-                                    showDialogueChain([{
-                                        speaker: "nila",
-                                        text: "✅ Good work. <br><br> <button class = 'btn btn-primary'onclick = \"window.location.reload()\">Next Task ➡️</button>"
-                                    }]);
-                                }
-                            }, 1000);
-                        } else {
-                            if (data.attempts_left > 0) {
-                                showDialogueChain([{
-                                    speaker: "ravi",
-                                    text: data.clue ? "💡 " + data.clue : data.message
-                                }]);
+                                                action: () => document.getElementById(
+                                                        "dialogue-continue").style.display =
+                                                    "none"
+                                            }
+                                        ]);
+                                    } else {
+                                        showDialogueChain([{
+                                            speaker: "nila",
+                                            text: "✅ Good work. <br><br> <button class = 'btn btn-primary'onclick = \"window.location.reload()\">Next Task ➡️</button>",
+                                            action: () => btn.classList.add("d-none")
+                                        }]);
+                                    }
+                                }, 1000);
                             } else {
-                                showHelpModal(@json($task->help));
+                                if (data.attempts_left > 0) {
+                                    showDialogueChain([{
+                                        speaker: "ravi",
+                                        text: data.clue ? "💡 " + data.clue : data.message
+                                    }]);
+                                } else {
+                                    showHelpModal(@json($task->help));
+                                }
                             }
-                        }
-                    });
+                        });
                 });
         });
 
         function awardBadge(id) {
+            playLevelWinSound();
             fetch(`/achievements/award/${id}`, {
                     method: 'POST',
                     headers: {
