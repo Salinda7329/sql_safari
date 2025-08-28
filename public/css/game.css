@@ -7,9 +7,10 @@ body {
 }
 
 .game-header {
-    background: #fff;
-    padding: 10px;
+    background: #04f4b0;
+    padding: 0px;
     border-bottom: 2px solid #ccc;
+    height: 150px;;
 }
 
 .game-logo {
@@ -116,7 +117,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #f8f9fa; /* light background */
+    background: #32b008; /* light background */
     border-top: 1px solid #ddd;
     padding: 10px;
     display: flex;

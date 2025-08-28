@@ -14,7 +14,27 @@
 
 <body>
     <header class="game-header">
-        <img src="{{ asset('images/logo.png') }}" alt="SQL Safari" class="game-logo">
+        <div class="row align-items-center">
+            <div class="col-2 d-flex justify-content-center">
+                <img src="{{ asset('images/logo.png') }}" style="height:130px;padding:0" alt="SQL Safari" class="game-logo">
+            </div>
+
+            <div class="col-8 d-flex justify-content-center">
+                <!-- optional centered title or nav -->
+            </div>
+
+            <div class="col-1 d-flex justify-content-center">
+                <a href="{{ route('achievements') }}" class="text-decoration-none"
+                    style="display:inline-block; padding:6px 10px; border-radius:9999px; background:#f3f4f6; font-weight:600;">
+                    Achievements
+                </a>
+            </div>
+
+            <div class="col-1 d-flex justify-content-center">
+                <!-- optional -->
+            </div>
+        </div>
+
     </header>
 
     <main class="game-container">
@@ -54,7 +74,6 @@
         levelWin.currentTime = 0;
         levelWin.play();
     }
-
 </script>
 
 </html>
