@@ -381,6 +381,7 @@
 
     <!-- Hero -->
     <section class="hero" data-aos="zoom-in">
+        <img src="{{ asset('images/logo.png') }}" style="height:400px;" alt="SQL Safari" class="game-logo">
         <h1 class="glow">🌴 Welcome to SQL Safari: Sri Lanka! 🌴</h1>
         <p data-aos="fade-up">A gamified adventure where you travel across Sri Lanka with Alex, Ravi, and Nila while
             mastering SQL step by step.</p>
