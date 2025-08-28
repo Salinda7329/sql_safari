@@ -259,6 +259,17 @@
             font-size: 2rem;
         }
 
+        .scroll-indicator2 {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            animation: bounce 2s infinite;
+            color: white;
+            font-size: 2rem;
+        }
+
         @keyframes bounce {
 
             0%,
@@ -340,6 +351,10 @@
         }
 
 
+        .d-none {
+            display: none !important;
+        }
+
         @keyframes floaty {
 
             0%,
@@ -369,7 +384,6 @@
         <h1 class="glow">🌴 Welcome to SQL Safari: Sri Lanka! 🌴</h1>
         <p data-aos="fade-up">A gamified adventure where you travel across Sri Lanka with Alex, Ravi, and Nila while
             mastering SQL step by step.</p>
-
     </section>
 
 
@@ -404,13 +418,6 @@
         <p>The legendary data scientist 👨‍🏫 awaiting in the final level with the ultimate SQL challenge.</p>
     </section>
 
-    {{-- End Character intro --}}
-
-    <!-- Story -->
-    {{-- <section class="story-section" data-aos="fade-right">
-        <h2>🌍 Meet Your Companions</h2>
-
-    </section> --}}
 
     <!-- How-to -->
     <section class="how-to-section" data-aos="fade-left">
@@ -445,6 +452,8 @@
         </div>
     </section>
 
+    <div hidden id="starting_final_section"></div>
+
     <!-- Final -->
     <section class="final-section" data-aos="zoom-in">
         <h2>🚀 Ready to Begin?</h2>
@@ -453,6 +462,9 @@
     </section>
 
     <a class="scroll-indicator" id="scrollIndicator">Click The Background To Begin</a>
+
+    <a class="scroll-indicator2 d-none" id="scrollIndicator2">Scroll Down to Explore More</a>
+
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
@@ -481,25 +493,39 @@
         // Lock scroll until intros are done
         document.body.style.overflow = "hidden";
 
-        // 🎵 Audio constants
+        // Audio constants
         const welcomeAudio = new Audio("{{ asset('audio/welcome_voice.mp3') }}");
         const joinAlexAudio = new Audio("{{ asset('audio/join_alex.mp3') }}");
         const meetRaviAudio = new Audio("{{ asset('audio/meet_ravi.mp3') }}");
         const meetNilaAudio = new Audio("{{ asset('audio/meet_nila.mp3') }}");
         const meetProfAudio = new Audio("{{ asset('audio/meet_professor.mp3') }}");
 
-        // Section constants
+        // Sections
         const heroSection = document.querySelector(".hero");
         const alexSection = document.getElementById("alex-intro");
         const raviSection = document.getElementById("meet-ravi");
         const nilaSection = document.getElementById("meet-nila");
         const profSection = document.getElementById("meet-professor");
+        const finalSection = document.querySelector(".final-section");
+
+        // Indicator
+        const indicator = document.getElementById("scrollIndicator2");
+        const DISMISS_KEY = "scrollIndicator2Dismissed";
+
+        // Ensure hidden at load
+        indicator.classList.add("d-none");
+
+        // If previously dismissed, keep hidden forever
+        const dismissedForever = () => localStorage.getItem(DISMISS_KEY) === "true";
+        if (dismissedForever()) {
+            // no-op; keep hidden
+        }
 
         // Helper: play audio + scroll to section + return Promise
         function playSectionAudio(audio, section, storageKey) {
-            return new Promise((resolve, reject) => {
-                if (localStorage.getItem(storageKey)) {
-                    resolve(); // already played
+            return new Promise((resolve) => {
+                if (localStorage.getItem(storageKey) === "true") {
+                    resolve();
                     return;
                 }
 
@@ -507,12 +533,15 @@
                     behavior: "smooth"
                 });
 
-                // Delay scroll → then play audio
                 setTimeout(() => {
                     audio.currentTime = 0;
                     audio.play().then(() => {
                         localStorage.setItem(storageKey, "true");
-                    }).catch(err => console.warn("Playback failed:", err));
+                    }).catch((err) => {
+                        console.warn("Playback failed:", err);
+                        // Continue the flow even if audio can't start (autoplay policy etc.)
+                        resolve();
+                    });
                 }, 1000);
 
                 audio.addEventListener("ended", () => resolve(), {
@@ -530,29 +559,45 @@
                 await playSectionAudio(meetNilaAudio, nilaSection, "meet-nila_played");
                 await playSectionAudio(meetProfAudio, profSection, "meet-professor_played");
 
-                // ✅ After professor → unlock scroll
                 document.body.style.overflow = "auto";
+
+                // ✅ minimal logic: show now, auto-hide when .final-section enters viewport
+                indicator.classList.remove("d-none");
+                new IntersectionObserver(([e], obs) => {
+                    if (e.isIntersecting) {
+                        indicator.classList.add("d-none");
+                        obs.disconnect();
+                    }
+                }).observe(finalSection);
+
             } catch (err) {
                 console.error("Sequence error:", err);
+                document.body.style.overflow = "auto";
             }
         }
 
-        // Start when user clicks background/hero once
+
+        // Start when user clicks background/hero once (autoplay policy)
         if (!localStorage.getItem("welcome_voice_played")) {
             heroSection.addEventListener("click", () => {
+                const el = document.getElementById("scrollIndicator");
+                if (el) el.hidden = true; // adds the `hidden` attribute
                 startSequence();
             }, {
                 once: true
             });
         } else {
-            // If already played before → just unlock
+            // If already played earlier, let user scroll immediately.
             document.body.style.overflow = "auto";
+            // We only show the indicator after meetProfAudio in this session.
         }
 
-        // 🧹 Reset when leaving
+        // IMPORTANT: remove your previous beforeunload clear,
+        // otherwise the "hide forever" choice won't persist.
         window.addEventListener("beforeunload", () => {
             localStorage.clear();
         });
+
     });
 </script>
 
