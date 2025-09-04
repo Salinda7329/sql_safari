@@ -106,7 +106,7 @@
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button id="journey-play" class="btn btn-outline-secondary d-none">▶️ Tap to Play Audio</button>
-                    <button id="journey-continue" class="btn btn-primary" disabled>Continue ➡️</button>
+                    <button id="journey-continue" class="btn btn-primary">Continue ➡️</button>
                 </div>
             </div>
         </div>
@@ -129,7 +129,7 @@
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button id="dialogue-play" class="btn btn-outline-secondary d-none">▶️ Tap to Play Audio</button>
-                    <button type="button" id="dialogue-continue" class="btn btn-primary" disabled>Continue ➡️</button>
+                    <button type="button" id="dialogue-continue" class="btn btn-primary">Continue ➡️</button>
                 </div>
             </div>
         </div>
@@ -242,14 +242,14 @@
              */
             function playBlockingAudio(src, continueBtn, playBtn) {
                 return new Promise((resolve) => {
-                    continueBtn.disabled = true;
+                    // continueBtn.disabled = true;
                     playBtn?.classList.add('d-none');
 
                     voice.src = src;
                     voice.currentTime = 0;
 
                     const onEnded = () => {
-                        continueBtn.disabled = false;
+                        // continueBtn.disabled = false;
                         voice.removeEventListener('ended', onEnded);
                         resolve();
                     };
@@ -265,12 +265,12 @@
                                 playBtn.classList.add('d-none');
                                 voice.play().catch(() => {
                                     // If still fails, enable continue so they are not stuck
-                                    continueBtn.disabled = false;
+                                    // continueBtn.disabled = false;
                                 });
                             };
                         } else {
                             // No play button provided -> allow continue
-                            continueBtn.disabled = false;
+                            // continueBtn.disabled = false;
                         }
                     });
                 });
