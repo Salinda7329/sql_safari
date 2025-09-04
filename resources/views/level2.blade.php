@@ -51,8 +51,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Help Guide Modal -->
+    {{-- Help Guide Model  --}}
     <div class="modal fade" id="helpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content bg-light text-dark">
@@ -66,17 +65,53 @@
             </div>
         </div>
     </div>
-
-    <!-- Result Modal (same as Level 1) -->
+    <!-- Result Modal -->
     <div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content bg-light text-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title">📊 Query Result</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modal_title">📊 Query Result</h5>
+                    <button type="button" id="result_model_close" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="result-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="modal fade" id="warningModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">⚠️ Warning</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Please Enter a Query Before Selecting Run Query.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Wrong Query Modal -->
+    <div class="modal fade" id="wrongQueryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">⚠️ Wrong Query</h5>
+                    <button type="button" id="wbtn" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="sql_error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
         </div>
@@ -103,7 +138,7 @@
 
         .db-preview table {
             background: #fff;
-            font-size: .9rem;
+            font-size: 0.9rem;
             border: 1px solid #ddd;
         }
 
@@ -114,7 +149,7 @@
         }
 
         .db-preview tr:nth-child(even) {
-            background: #f9f9f9;
+            background: #8f8c8c;
         }
     </style>
 @endsection
@@ -228,6 +263,13 @@
         // ✅ Run query logic (same as Level 1)
         document.getElementById('run-btn').addEventListener('click', function() {
             let query = document.getElementById('query-box').value;
+
+            if (!query) {
+                // Show modal if query is empty
+                let warning_modal = new bootstrap.Modal(document.getElementById('warningModal'));
+                warning_modal.show();
+                return;
+            }
             fetch(`/sql-game/{{ $level->id }}/run`, {
                     method: 'POST',
                     headers: {
@@ -241,14 +283,23 @@
                 })
                 .then(res => res.json())
                 .then(data => {
+                    // 🔹 Update attempts counter
+
                     if (data.attempts_left !== undefined) {
                         document.getElementById('attempts-left').textContent = data.attempts_left;
                     }
 
-                    // Fill Result Modal
+                    // 🔹 Prepare result modal
+
                     const resultContent = document.getElementById("result-content");
                     resultContent.innerHTML = "";
-                    if (data.result && data.result.length > 0) {
+
+                    // Prepare wrong query modal
+                    const sql_error = document.getElementById("sql_error");
+                    sql_error.innerHTML = "";
+                    // 🔹 Render raw DB result or error
+                    // if (data.result && data.result.length > 0) {
+                    if (data.message === "correct") {
                         let table = "<table class='table table-bordered table-sm'><thead><tr>";
                         Object.keys(data.result[0]).forEach(col => {
                             table += `<th>${col}</th>`;
@@ -263,9 +314,52 @@
                         });
                         table += "</tbody></table>";
                         resultContent.innerHTML = table;
+                        document.getElementById("modal_title").innerHTML = "✅ Correct! Result.";
+                    } else if (data.message === "wrong_answer") {
+
+                        // sql_error.innerHTML =
+                        //     `<p class="text-danger">"❌ Wrong query"}</p>`;
+                        // // Show wrong query modal
+                        // const resultwrongQueryModal = new bootstrap.Modal(document.getElementById(
+                        //     "wrongQueryModal"), {
+                        //     backdrop: 'static',
+                        //     keyboard: false
+                        // });
+                        // resultwrongQueryModal.show();
+
+                        // document.getElementById("wrongQueryModal").addEventListener("hidden.bs.modal",
+                        //     function onClose() {
+                        //         this.removeEventListener("hidden.bs.modal", onClose);
+
+                        let table = "<table class='table table-bordered table-sm'><thead><tr>";
+
+                        Object.keys(data.result[0]).forEach(col => {
+                            table += `<th>${col}</th>`;
+                        });
+                        table += "</tr></thead><tbody>";
+                        data.result.forEach(row => {
+                            table += "<tr>";
+                            Object.values(row).forEach(val => {
+                                table += `<td>${val}</td>`;
+                            });
+                            table += "</tr>";
+                        });
+                        table += "</tbody></table>";
+                        resultContent.innerHTML = table;
+
+                        document.getElementById("modal_title").innerHTML =
+                            "⚠️ Wrong Query..fix your SQL.. Try Again";
+
+                        // });
+
                     } else {
+                        document.getElementById("modal_title").innerHTML = "🔺 Error";
+
                         resultContent.innerHTML =
-                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
+                            `<p class="mb-0">Nothing to Show.. Your Query is Wrong.. Try Again</p>`;
+
+                        // Add error styling
+                        resultContent.classList.add("bg-danger", "text-white", "p-3", "rounded");
                     }
 
                     // Show Result Modal
@@ -280,6 +374,12 @@
                         function onClose() {
                             const btn = document.getElementById("dialogue-continue");
                             this.removeEventListener("hidden.bs.modal", onClose);
+                            // Reset modal title
+                            document.getElementById("modal_title").innerHTML = "Result";
+
+                            // Reset content
+                            resultContent.innerHTML = "";
+                            resultContent.classList.remove("bg-danger", "text-white", "p-3", "rounded");
 
                             if (data.success) {
                                 loadReferenceTables({{ $task->id }}, true, data.result);

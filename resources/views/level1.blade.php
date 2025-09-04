@@ -13,7 +13,6 @@
                     Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
                 </span>
             </div>
-
         </div>
 
         <div class="row">
@@ -36,7 +35,6 @@
                 <img id="alex-img" src="{{ asset('images/alex.png') }}" alt="Alex" class="character alex d-none">
             </div>
         </div>
-
     </div>
 
     <!-- Character messages Bootstrap Modal -->
@@ -52,7 +50,6 @@
             </div>
         </div>
     </div>
-
     {{-- Help Guide Model  --}}
     <div class="modal fade" id="helpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-fullscreen">
@@ -67,7 +64,6 @@
             </div>
         </div>
     </div>
-
     <!-- Result Modal -->
     <div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -119,8 +115,6 @@
             </div>
         </div>
     </div>
-
-
 @endsection
 
 @section('styles')
@@ -320,7 +314,6 @@
                     // Prepare wrong query modal
                     const sql_error = document.getElementById("sql_error");
                     sql_error.innerHTML = "";
-
                     // 🔹 Render raw DB result or error
                     // if (data.result && data.result.length > 0) {
                     if (data.message === "correct") {
