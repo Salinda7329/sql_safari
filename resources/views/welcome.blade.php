@@ -257,6 +257,10 @@
             animation: bounce 2s infinite;
             color: white;
             font-size: 2rem;
+            border: 1px solid rgb(229, 17, 17);
+            border-radius: 10px;
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.633);
         }
 
         .scroll-indicator2 {
@@ -268,6 +272,10 @@
             animation: bounce 2s infinite;
             color: white;
             font-size: 2rem;
+            border: 1px solid rgb(229, 17, 17);
+            border-radius: 10px;
+            padding: 5px 5px;
+            background-color: rgba(0, 0, 0, 0.377);
         }
 
         @keyframes bounce {
@@ -346,7 +354,7 @@
         }
 
         .scroll-indicator:hover {
-            color: #ffcc00;
+            color: #ff0000;
             /* optional: highlight on hover */
         }
 
@@ -462,7 +470,8 @@
         <button class="btn-start" onclick="startAdventure()">🌟 Start Your Journey 🌟</button>
     </section>
 
-    <a class="scroll-indicator" id="scrollIndicator">Click The Background To Begin</a>
+    <a class="scroll-indicator" id="scrollIndicator" data-toggle="tooltip" data-placement="right"
+        title="Click anywhere on the background.">Click On The Background To Begin</a>
 
     <a class="scroll-indicator2 d-none" id="scrollIndicator2">Scroll Down to Explore More</a>
 
@@ -503,6 +512,7 @@
 
         // Sections
         const heroSection = document.querySelector(".hero");
+        const heroSectionindicatorbtn = document.querySelector(".scroll-indicator");
         const alexSection = document.getElementById("alex-intro");
         const raviSection = document.getElementById("meet-ravi");
         const nilaSection = document.getElementById("meet-nila");
@@ -580,12 +590,16 @@
 
         // Start when user clicks background/hero once (autoplay policy)
         if (!localStorage.getItem("welcome_voice_played")) {
-            heroSection.addEventListener("click", () => {
-                const el = document.getElementById("scrollIndicator");
-                if (el) el.hidden = true; // adds the `hidden` attribute
-                startSequence();
-            }, {
-                once: true
+            [heroSection, heroSectionindicatorbtn].forEach(section => {
+                if (section) { // check element exists
+                    section.addEventListener("click", () => {
+                        const el = document.getElementById("scrollIndicator");
+                        if (el) el.hidden = true;
+                        startSequence();
+                    }, {
+                        once: true
+                    });
+                }
             });
         } else {
             // If already played earlier, let user scroll immediately.

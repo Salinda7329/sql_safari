@@ -102,6 +102,25 @@
     </div>
 
 
+    <!-- Wrong Query Modal -->
+    <div class="modal fade" id="wrongQueryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">⚠️ Wrong Query</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="sql_error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 @endsection
 
 @section('styles')
@@ -298,6 +317,10 @@
                     const resultContent = document.getElementById("result-content");
                     resultContent.innerHTML = "";
 
+                    // Prepare wrong query modal
+                    const sql_error = document.getElementById("sql_error");
+                    sql_error.innerHTML = "";
+
                     // 🔹 Render raw DB result or error
                     if (data.result && data.result.length > 0) {
                         let table = "<table class='table table-bordered table-sm'><thead><tr>";
@@ -315,11 +338,20 @@
                         table += "</tbody></table>";
                         resultContent.innerHTML = table;
                     } else if (data.success) {
-                        resultContent.innerHTML =
-                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
+                        sql_error.innerHTML =
+                            `<p class="text-danger">"❌ Wrong query or SQL error"}</p>`;
                     } else {
-                        resultContent.innerHTML =
-                            `<p class="text-danger">${data.message || "❌ Wrong query or SQL error"}</p>`;
+                        sql_error.innerHTML =
+                            `<p class="text-danger">"❌ Wrong query or SQL error"}</p>`;
+
+                        // Show wrong query modal
+                        const resultwrongQueryModal = new bootstrap.Modal(document.getElementById(
+                            "wrongQueryModal"), {
+                            backdrop: 'static',
+                            keyboard: false
+                        });
+                        resultwrongQueryModal.show();
+                        resultModal.hide();
                     }
 
                     // 🔹 Show modal
