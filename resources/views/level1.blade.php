@@ -73,8 +73,8 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content bg-light text-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title">📊 Query Result</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modal_title">📊 Query Result</h5>
+                    <button type="button" id="result_model_close" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="result-content"></div>
@@ -108,7 +108,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">⚠️ Wrong Query</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" id="wbtn" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="sql_error"></div>
@@ -322,7 +322,8 @@
                     sql_error.innerHTML = "";
 
                     // 🔹 Render raw DB result or error
-                    if (data.result && data.result.length > 0) {
+                    // if (data.result && data.result.length > 0) {
+                    if (data.message === "correct") {
                         let table = "<table class='table table-bordered table-sm'><thead><tr>";
                         Object.keys(data.result[0]).forEach(col => {
                             table += `<th>${col}</th>`;
@@ -337,24 +338,56 @@
                         });
                         table += "</tbody></table>";
                         resultContent.innerHTML = table;
-                    } else if (data.success) {
-                        sql_error.innerHTML =
-                            `<p class="text-danger">"❌ Wrong query or SQL error"}</p>`;
-                    } else {
-                        sql_error.innerHTML =
-                            `<p class="text-danger">"❌ Wrong query or SQL error"}</p>`;
+                        document.getElementById("modal_title").innerHTML = "✅ Correct! Result.";
 
-                        // Show wrong query modal
-                        const resultwrongQueryModal = new bootstrap.Modal(document.getElementById(
-                            "wrongQueryModal"), {
-                            backdrop: 'static',
-                            keyboard: false
+                    } else if (data.message === "wrong_answer") {
+
+                        // sql_error.innerHTML =
+                        //     `<p class="text-danger">"❌ Wrong query"}</p>`;
+                        // // Show wrong query modal
+                        // const resultwrongQueryModal = new bootstrap.Modal(document.getElementById(
+                        //     "wrongQueryModal"), {
+                        //     backdrop: 'static',
+                        //     keyboard: false
+                        // });
+                        // resultwrongQueryModal.show();
+
+                        // document.getElementById("wrongQueryModal").addEventListener("hidden.bs.modal",
+                        //     function onClose() {
+                        //         this.removeEventListener("hidden.bs.modal", onClose);
+
+                        let table = "<table class='table table-bordered table-sm'><thead><tr>";
+
+                        Object.keys(data.result[0]).forEach(col => {
+                            table += `<th>${col}</th>`;
                         });
-                        resultwrongQueryModal.show();
-                        resultModal.hide();
+                        table += "</tr></thead><tbody>";
+                        data.result.forEach(row => {
+                            table += "<tr>";
+                            Object.values(row).forEach(val => {
+                                table += `<td>${val}</td>`;
+                            });
+                            table += "</tr>";
+                        });
+                        table += "</tbody></table>";
+                        resultContent.innerHTML = table;
+
+                        document.getElementById("modal_title").innerHTML = "⚠️ Wrong Query..fix your SQL.. Try Again";
+
+                        // });
+
+                    } else {
+
+                        document.getElementById("modal_title").innerHTML = "🔺 Error";
+
+                        resultContent.innerHTML =
+                            `<p class="mb-0">Nothing to Show.. Your Query is Wrong.. Try Again</p>`;
+
+                        // Add error styling
+                        resultContent.classList.add("bg-danger", "text-white", "p-3", "rounded");
                     }
 
-                    // 🔹 Show modal
+                    // ✅show result modal
                     const resultModal = new bootstrap.Modal(document.getElementById("resultModal"), {
                         backdrop: 'static',
                         keyboard: false
@@ -365,6 +398,13 @@
                     document.getElementById("resultModal").addEventListener("hidden.bs.modal",
                         function onClose() {
                             this.removeEventListener("hidden.bs.modal", onClose);
+
+                            // Reset modal title
+                            document.getElementById("modal_title").innerHTML = "Result";
+
+                            // Reset content
+                            resultContent.innerHTML = "";
+                            resultContent.classList.remove("bg-danger", "text-white", "p-3", "rounded");
 
                             // 🔹 Game logic after showing results
                             if (data.success) {

@@ -257,7 +257,7 @@ class SqlGameController extends Controller
 
                     return response()->json([
                         'success'       => true,
-                        'message'       => "🎉 Task complete! Moving to Task " . $nextTask->level_id,
+                        'message'       =>"correct",
                         'result'        => $userResult, // 🔹 Always return result
                         'attempts_left' => 3,
                         'next_level'    => $nextTask->level_id
@@ -287,7 +287,7 @@ class SqlGameController extends Controller
 
                 return response()->json([
                     'success'        => false,
-                    'message'        => "❌ Wrong answer.",
+                    'message'        => "wrong_answer",//wrong
                     'result'         => $userResult, // 🔹 Still return what the DB produced
                     'attempts_left'  => $remainingAttempts,
                     'clue'           => $remainingAttempts > 0 ? $task->clue : null,
