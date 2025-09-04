@@ -83,6 +83,24 @@
         </div>
     </div>
 
+    <!-- Warning Modal -->
+    <div class="modal fade" id="warningModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">⚠️ Warning</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Please Enter a Query Before Selecting Run Query.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @endsection
 
@@ -250,6 +268,13 @@
         // Run query logic
         document.getElementById('run-btn').addEventListener('click', function() {
             let query = document.getElementById('query-box').value;
+
+            if (!query) {
+                // Show modal if query is empty
+                let warning_modal = new bootstrap.Modal(document.getElementById('warningModal'));
+                warning_modal.show();
+                return;
+            }
 
             fetch(`/sql-game/{{ $level->id }}/run`, {
                     method: 'POST',
