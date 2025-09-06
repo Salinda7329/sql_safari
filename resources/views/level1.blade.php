@@ -9,7 +9,8 @@
                 <h2>🌴 Colombo, Sri Lanka</h2>
             </div>
             <div class="col">
-                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;" title="Remaining Attempts">
+                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;"
+                    title="Remaining Attempts">
                     Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
                 </span>
             </div>
@@ -256,6 +257,11 @@
             helpModal.show();
         }
 
+        //when warning modal is closed, enable run button
+        document.getElementById("warningModal").addEventListener("hidden.bs.modal", function() {
+            document.getElementById('run-btn').disabled = false;
+        });
+
         // 🔹 On page load → show dialogue chain with Nila → Alex → Nila
         document.addEventListener("DOMContentLoaded", () => {
             showDialogueChain([{
@@ -280,6 +286,8 @@
 
         // Run query logic
         document.getElementById('run-btn').addEventListener('click', function() {
+            //disable run button to prevent multiple clicks
+            this.disabled = true;
             let query = document.getElementById('query-box').value;
 
             if (!query) {
@@ -317,6 +325,8 @@
                     // 🔹 Render raw DB result or error
                     // if (data.result && data.result.length > 0) {
                     if (data.message === "correct") {
+                        //disable run button to prevent multiple clicks
+                        this.disabled = true;
                         let table = "<table class='table table-bordered table-sm'><thead><tr>";
                         Object.keys(data.result[0]).forEach(col => {
                             table += `<th>${col}</th>`;
@@ -365,7 +375,8 @@
                         table += "</tbody></table>";
                         resultContent.innerHTML = table;
 
-                        document.getElementById("modal_title").innerHTML = "⚠️ Wrong Query..fix your SQL.. Try Again";
+                        document.getElementById("modal_title").innerHTML =
+                            "⚠️ Wrong Query..fix your SQL.. Try Again";
 
                         // });
 
@@ -404,41 +415,37 @@
                                 // also load reference tables with rows
                                 loadReferenceTables({{ $task->id }}, true, data.result);
 
-                                // ⏳ wait 3 seconds before showing success dialogues
-                                setTimeout(() => {
-                                    if ({{ $task->id }} == 3) {
-                                        showDialogueChain([{
-                                                speaker: "alex",
-                                                text: "I'll stay in Colombo Grand Hotel"
-                                            },
-                                            {
-                                                speaker: "nila",
-                                                text: "Okay, let’s check in to the hotel"
-                                            },
-                                            {
-                                                speaker: "professor",
-                                                text: `You have mastered the basics! Now it's time to earn your first badge.
-                       <br><br>
-                       <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`,
-                                                action: () => {
-                                                    // 👇 hide continue when this dialogue is shown
-                                                    document.getElementById(
-                                                            "dialogue-continue").style
-                                                        .display = "none";
-                                                }
-                                            }
-                                        ]);
-                                    } else {
-                                        playTaskWinSound();
-                                        // Hide the default continue button
-                                        document.getElementById("dialogue-continue").style.display =
-                                            "none";
-                                        showDialogueChain([{
+                                if ({{ $task->id }} == 3) {
+                                    showDialogueChain([{
+                                            speaker: "alex",
+                                            text: "I'll stay in Colombo Grand Hotel"
+                                        },
+                                        {
                                             speaker: "nila",
-                                            text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
-                                        }]);
-                                    }
-                                }, 3000); // delay
+                                            text: "Okay, let’s check in to the hotel"
+                                        },
+                                        {
+                                            speaker: "professor",
+                                            text: `You have mastered the basics! Now it's time to earn your first badge.
+                   <br><br>
+                   <button class='btn btn-success' onclick="awardBadge(1)">🎖️ Get Badge</button>`,
+                                            action: () => {
+                                                // 👇 hide continue when this dialogue is shown
+                                                document.getElementById("dialogue-continue")
+                                                    .style.display = "none";
+                                            }
+                                        }
+                                    ]);
+                                } else {
+                                    playTaskWinSound();
+                                    // Hide the default continue button
+                                    document.getElementById("dialogue-continue").style.display = "none";
+                                    showDialogueChain([{
+                                        speaker: "nila",
+                                        text: "✅ Good work, Alex! <br><br><button class='btn btn-primary' onclick=\"window.location.reload()\">Next Task ➡️</button>"
+                                    }]);
+                                }
+
                             } else {
                                 // ❌ Incorrect query logic
                                 if (data.attempts_left > 0) {
@@ -450,8 +457,9 @@
                                     showHelpModal(@json($task->help));
                                 }
                             }
+                            // Re-enable run button
+                            document.getElementById('run-btn').disabled = false;
                         });
-
                 });
         });
 
