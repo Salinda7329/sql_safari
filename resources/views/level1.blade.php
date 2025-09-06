@@ -52,7 +52,7 @@
     </div>
     {{-- Help Guide Model  --}}
     <div class="modal fade" id="helpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-fullscreen">
+        <div class="modal-dialog">
             <div class="modal-content bg-light text-dark">
                 <div class="modal-header">
                     <h5 class="modal-title">📖 Help Guide</h5>
