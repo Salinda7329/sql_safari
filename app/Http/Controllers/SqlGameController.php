@@ -243,11 +243,20 @@ class SqlGameController extends Controller
 
         // 🔒 Step 3: Block harmful commands
         if (!in_array($firstWord, $allowed)) {
+            // reduce attempts for disallowed queries too
+            $remainingAttempts = max(0, $progress->attempts_left - 1);
+
+            DB::table('player_progress')
+                ->where('player_id', $playerId)
+                ->update(['attempts_left' => $remainingAttempts]);
+
             return response()->json([
-                'success' => false,
-                'message' => "⚠ This type of query is not allowed. Only: " . implode(', ', $allowed),
-                'result' => null,
-                'attempts_left' => $progress->attempts_left
+                'success'       => false,
+                'message'       => "⚠ This type of query is not allowed. Only: " . implode(', ', $allowed),
+                'result'        => null,
+                'attempts_left' => $remainingAttempts,
+                'clue'          => $remainingAttempts > 0 ? $task->clue : null,
+                'help'          => $remainingAttempts == 0 ? $task->help : null
             ]);
         }
 

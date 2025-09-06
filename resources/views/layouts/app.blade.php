@@ -24,7 +24,7 @@
                 <!-- optional centered title or nav -->
             </div>
 
-            <div class="col-1 d-flex justify-content-center">
+            <div class="col-1 d-flex justify-content-center" title="View Your Achievements">
                 <a href="{{ route('achievements') }}" class="text-decoration-none"
                     style="display:inline-block; padding:6px 10px; border-radius:9999px; background:#f3f4f6; font-weight:600;">
                     Achievements
@@ -42,7 +42,7 @@
             <div class="col-1" style="margin-left:-125px;margin-top:-40px">
                 <a href="#" class="text-decoration-none"
                     style="color:aliceblue;padding:6px;border-radius:9999px; background:#ed078a; font-weight:600;"
-                    data-bs-toggle="modal" data-bs-target="#resetModal">
+                    data-bs-toggle="modal" data-bs-target="#resetModal" title="Reset the Game and Start Over">
                     Reset Game
                 </a>
             </div>

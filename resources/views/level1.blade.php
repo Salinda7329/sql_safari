@@ -9,7 +9,7 @@
                 <h2>🌴 Colombo, Sri Lanka</h2>
             </div>
             <div class="col">
-                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;">
+                <span style="background:#dc3545; color:#fff; padding:6px 12px; border-radius:9999px; display:inline-block;" title="Remaining Attempts">
                     Attempts left: <span id="attempts-left">{{ $progress->attempts_left }}</span>
                 </span>
             </div>
