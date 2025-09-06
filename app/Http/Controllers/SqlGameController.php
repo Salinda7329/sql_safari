@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Player;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use App\Models\PlayerProgress;
+use App\Models\PlayerAchievement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -233,11 +235,26 @@ class SqlGameController extends Controller
 
         $progress = DB::table('player_progress')->where('player_id', $playerId)->first();
 
+        // 🔒 Step 1: Detect query type
+        $firstWord = strtoupper(strtok($userQuery, " "));
+
+        // 🔒 Step 2: Define allowed commands
+        $allowed = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN'];
+
+        // 🔒 Step 3: Block harmful commands
+        if (!in_array($firstWord, $allowed)) {
+            return response()->json([
+                'success' => false,
+                'message' => "⚠ This type of query is not allowed. Only: " . implode(', ', $allowed),
+                'result' => null,
+                'attempts_left' => $progress->attempts_left
+            ]);
+        }
+
         try {
-            // 🔹 Run player's query and task's expected query
+            // Only safe queries reach here
             $userResult = DB::select($userQuery);
             $expectedResult = DB::select($task->expected_query);
-
             // ✅ If both results match → task complete
             if ($userResult == $expectedResult) {
                 $nextTask = DB::table('level_tasks')
@@ -257,7 +274,7 @@ class SqlGameController extends Controller
 
                     return response()->json([
                         'success'       => true,
-                        'message'       =>"correct",
+                        'message'       => "correct",
                         'result'        => $userResult, // 🔹 Always return result
                         'attempts_left' => 3,
                         'next_level'    => $nextTask->level_id
@@ -287,7 +304,7 @@ class SqlGameController extends Controller
 
                 return response()->json([
                     'success'        => false,
-                    'message'        => "wrong_answer",//wrong
+                    'message'        => "wrong_answer", //wrong
                     'result'         => $userResult, // 🔹 Still return what the DB produced
                     'attempts_left'  => $remainingAttempts,
                     'clue'           => $remainingAttempts > 0 ? $task->clue : null,
@@ -376,5 +393,25 @@ class SqlGameController extends Controller
             $player->achievements()->syncWithoutDetaching([$achievement->id]);
             $player->increment('score', 100); // add points
         }
+    }
+
+    // reset game
+    public function reset(Request $request)
+    {
+        $user_id = 1; // demo user
+        // reset the progress for this user
+        PlayerProgress::where('player_id', $user_id)->update([
+            'highest_level'   => 1,
+            'intro_status'    => 1,
+            'current_level'   => 1,
+            'current_task_id' => 1,
+            'attempts_left'   => 3,
+        ]);
+
+        //reset achievements
+        PlayerAchievement::where('user_id', $user_id)->delete();
+
+        // Redirect back to home
+        return redirect('/')->with('status', 'Your game has been reset.');
     }
 }
