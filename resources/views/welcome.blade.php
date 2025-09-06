@@ -7,6 +7,8 @@
     <title>SQL Safari – Introduction</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         /* ✅ Keep your existing styles exactly (already perfect) */
         * {
@@ -378,8 +380,39 @@
 </head>
 
 <body>
+
     <div class="bg-animation"></div>
     <div class="progress-bar" id="progressBar"></div>
+    <!-- Flash message as blocking modal -->
+    @if (session('status'))
+        <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="z-index: 2000;">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Message</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ session('status') }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var statusModal = new bootstrap.Modal(document.getElementById("statusModal"), {
+                    backdrop: 'static', // disable background click
+                    keyboard: false // disable ESC key
+                });
+                statusModal.show();
+            });
+        </script>
+    @endif
 
     <!-- Floating Emojis -->
     <div class="floating-emoji">🌴</div>

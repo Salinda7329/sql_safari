@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PlayerProgress extends Model
+class PlayerAchievement extends Model
 {
-    protected $table = 'player_progress';
+    protected $table = 'player_achievements';
     public $timestamps = false;
 
     protected $fillable = [
-        'player_id',
-        'highest_level',
-        'current_level',
-        'current_task_id',
-        'attempts_left'
+        'user_id',
+        'achievement_id',
+        'earned_at',
     ];
 
     public function user()

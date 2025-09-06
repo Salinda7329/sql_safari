@@ -29,3 +29,6 @@ Route::post('/sql-game/{level}/intro/complete', [SqlNavController::class, 'intro
 Route::get('/sql-game/continue', [SqlNavController::class, 'continue'])->name('sql.continue');
 Route::post('/sql-game/next', [SqlNavController::class, 'next'])->name('sql.next');
 Route::get('/sql-game/intro/next', [SqlNavController::class, 'introNext'])->name('sql.intro.next');
+
+// reset the game
+Route::post('/reset-game', [SqlGameController::class, 'reset'])->name('game.reset');

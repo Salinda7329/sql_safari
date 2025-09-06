@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Player;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
+use App\Models\PlayerProgress;
+use App\Models\PlayerAchievement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -257,7 +259,7 @@ class SqlGameController extends Controller
 
                     return response()->json([
                         'success'       => true,
-                        'message'       =>"correct",
+                        'message'       => "correct",
                         'result'        => $userResult, // 🔹 Always return result
                         'attempts_left' => 3,
                         'next_level'    => $nextTask->level_id
@@ -287,7 +289,7 @@ class SqlGameController extends Controller
 
                 return response()->json([
                     'success'        => false,
-                    'message'        => "wrong_answer",//wrong
+                    'message'        => "wrong_answer", //wrong
                     'result'         => $userResult, // 🔹 Still return what the DB produced
                     'attempts_left'  => $remainingAttempts,
                     'clue'           => $remainingAttempts > 0 ? $task->clue : null,
@@ -376,5 +378,25 @@ class SqlGameController extends Controller
             $player->achievements()->syncWithoutDetaching([$achievement->id]);
             $player->increment('score', 100); // add points
         }
+    }
+
+    // reset game
+    public function reset(Request $request)
+    {
+        $user_id = 1; // demo user
+        // reset the progress for this user
+        PlayerProgress::where('player_id', $user_id)->update([
+            'highest_level'   => 1,
+            'intro_status'    => 1,
+            'current_level'   => 1,
+            'current_task_id' => 1,
+            'attempts_left'   => 3,
+        ]);
+
+        //reset achievements
+        PlayerAchievement::where('user_id', $user_id)->delete();
+
+        // Redirect back to home
+        return redirect('/')->with('status', 'Your game has been reset.');
     }
 }
