@@ -14,7 +14,7 @@ class SqlGameController extends Controller
 {
     public function showIntroduction(int $level)
     {
-        $validSections = [1, 2, 3]; // Define valid sections
+        $validSections = [1,2,3,4,5,6,7,8,9];
         if (!in_array($level, $validSections)) {
             abort(404);
         }
