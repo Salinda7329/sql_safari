@@ -239,7 +239,7 @@ class SqlGameController extends Controller
         $firstWord = strtoupper(strtok($userQuery, " "));
 
         // 🔒 Step 2: Define allowed commands
-        $allowed = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN'];
+        $allowed = ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN','UPDATE','INSERT', 'DELETE  '];
 
         // 🔒 Step 3: Block harmful commands
         if (!in_array($firstWord, $allowed)) {
